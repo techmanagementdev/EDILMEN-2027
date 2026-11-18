@@ -4,11 +4,11 @@ import { useApp, eur, num, Field, ErrorBox, ComuneInput, Choice, useToast } from
 import { api } from '../../api.js';
 
 const Hero = ({ eyebrow, title, sub, children }) => (
-  <section className="bg-navy text-white">
-    <div className="max-w-6xl mx-auto px-4 py-14 lg:py-20">
-      <div className="eyebrow text-blue-300">{eyebrow}</div>
-      <h1 className="text-3xl sm:text-5xl font-extrabold mt-3 max-w-4xl leading-tight">{title}</h1>
-      {sub && <p className="text-white/75 text-lg mt-4 max-w-3xl">{sub}</p>}
+  <section className="hero-field bg-brand text-[#ecebea]">
+    <div className="max-w-6xl mx-auto px-4 py-16 lg:py-28">
+      <div className="text-lg text-[#d2a9ac]">{eyebrow}</div>
+      <h1 className="text-4xl sm:text-6xl font-semibold mt-4 max-w-4xl" style={{ letterSpacing: '-0.04em', lineHeight: 1 }}>{title}</h1>
+      {sub && <p className="text-[#ecebea]/85 text-xl mt-6 max-w-3xl">{sub}</p>}
       {children && <div className="mt-8 flex flex-wrap gap-3">{children}</div>}
     </div>
   </section>

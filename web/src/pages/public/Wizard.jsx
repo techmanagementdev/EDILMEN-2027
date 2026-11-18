@@ -273,7 +273,7 @@ export default function Wizard({ mode = 'public', property = null, onSaved }) {
         <Head title="Ecco quanto costa" sub={`${a.comune ? a.comune + ' · ' : ''}livello ${LEVELS[a.level].toLowerCase()} · IVA esclusa`} />
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="rounded-2xl bg-ok-soft p-5"><div className="text-sm text-ok font-bold">Minimo · parte fissa</div><div className="text-3xl font-extrabold mt-1">{eur(quote.fixed.imponibile)}</div><div className="text-xs text-ink-soft mt-1">se al sopralluogo non emerge nessun imprevisto</div></div>
-          <div className="rounded-2xl bg-navy text-white p-5"><div className="text-sm text-blue-200 font-bold">Prezzo prudente · massimo</div><div className="text-3xl font-extrabold mt-1">{eur(quote.prudent.imponibile)}</div><div className="text-xs text-white/70 mt-1">comprende gli imprevisti tipici: al sopralluogo può solo scendere</div></div>
+          <div className="rounded-2xl bg-navy text-white p-5"><div className="text-sm text-[#d2a9ac] font-bold">Prezzo prudente · massimo</div><div className="text-3xl font-extrabold mt-1">{eur(quote.prudent.imponibile)}</div><div className="text-xs text-white/70 mt-1">comprende gli imprevisti tipici: al sopralluogo può solo scendere</div></div>
         </div>
         <div className="flex gap-1.5 my-4">{LEVELS.map((l, k) => <button key={l} onClick={() => set('level', k)} className={`btn-sm ${a.level === k ? 'btn-dark' : 'btn-ghost'}`}>{l}</button>)}</div>
         <QuoteBreakdown quote={quote} catalog={catalog} />

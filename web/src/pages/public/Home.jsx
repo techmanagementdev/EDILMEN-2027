@@ -1,173 +1,359 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useApp, num, eur } from '../../ui.jsx';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { computeQuote, LEVELS } from '@shared/pricing.js';
+import { linesFromAnswers } from '@shared/lavori.js';
+import { useApp } from '../../ui.jsx';
 import { api } from '../../api.js';
+import './home.css';
 
-const QUICK = [
-  ['bagno', '🛁', 'Rifare il bagno'], ['completa', '🏠', 'Ristrutturare casa'], ['finestre', '🪟', 'Finestre'], ['fv', '☀️', 'Fotovoltaico'],
-  ['pdc', '🌡️', 'Pompa di calore'], ['tetto', '🏚️', 'Tetto'], ['cappotto', '🧥', 'Cappotto'], ['casanuova', '🏡', 'Casa nuova'],
+const eur = (v) => String(Math.round(v || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
+
+// Le frasi del titolo: ognuna è un lavoro vero del listino.
+const JOBS = [
+  { id: 'bagno', say: 'Rifare il bagno', mq: false },
+  { id: 'cucina', say: 'Rifare la cucina', mq: false },
+  { id: 'completa', say: 'Ristrutturare casa', mq: true, def: 85 },
+  { id: 'rinnovo', say: 'Rinfrescare casa', mq: true, def: 85 },
+  { id: 'finestre', say: 'Cambiare le finestre', mq: false },
+  { id: 'tetto', say: 'Rifare il tetto', mq: true, def: 110 },
+  { id: 'cappotto', say: 'Fare il cappotto', mq: true, def: 120 },
+  { id: 'fv', say: 'Il fotovoltaico', mq: false },
+  { id: 'pdc', say: 'La pompa di calore', mq: false },
+  { id: 'pavimenti', say: 'I pavimenti nuovi', mq: true, def: 70 },
+  { id: 'pitture', say: 'Imbiancare casa', mq: true, def: 85 },
 ];
+const EXAMPLES = ['bagno e cucina, 80 mq a Rovereto', 'cappotto e tetto per una villetta', 'fotovoltaico con batteria', 'cambiare le finestre in alluminio'];
+
+function useReveal(dep) {
+  useEffect(() => {
+    const els = document.querySelectorAll('.em .rv:not(.in)');
+    if (!('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('in')); return undefined; }
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+    els.forEach((e) => io.observe(e));
+    return () => io.disconnect();
+  }, [dep]);
+}
+
+function useCount(value) {
+  const [shown, setShown] = useState(value);
+  const from = useRef(value);
+  useEffect(() => {
+    const a = from.current, b = value, t0 = performance.now();
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setShown(b); from.current = b; return undefined; }
+    let raf;
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / 520);
+      const e = 1 - Math.pow(1 - k, 4);
+      setShown(a + (b - a) * e);
+      if (k < 1) raf = requestAnimationFrame(tick); else from.current = b;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(raf); from.current = b; };
+  }, [value]);
+  return shown;
+}
+
+function JobMenu({ job, onPick }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    if (!open) return undefined;
+    const h = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const k = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', h);
+    document.addEventListener('keydown', k);
+    return () => { document.removeEventListener('mousedown', h); document.removeEventListener('keydown', k); };
+  }, [open]);
+  return (
+    <span ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button type="button" className="slot" aria-haspopup="listbox" aria-expanded={open} aria-label={`Lavoro: ${job.say}. Cambia lavoro`} onClick={() => setOpen(!open)}>
+        {job.say}<span aria-hidden="true" style={{ fontSize: '.4em', verticalAlign: '.55em', marginLeft: '.2em' }}>▼</span>
+      </button>
+      {open && (
+        <span className="em-sugg" role="listbox" aria-label="Scegli il lavoro" style={{ left: 0, top: '100%', fontSize: '1.0625rem', letterSpacing: 'normal', lineHeight: 1.4, fontWeight: 500 }}>
+          {JOBS.map((j) => (
+            <button key={j.id} role="option" aria-selected={j.id === job.id} type="button" onClick={() => { onPick(j); setOpen(false); }} style={{ fontWeight: j.id === job.id ? 700 : 500 }}>{j.say}</button>
+          ))}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function ComuneChip({ value, onChange }) {
+  const [text, setText] = useState(value.nome);
+  const [list, setList] = useState([]);
+  const t = useRef();
+  useEffect(() => setText(value.nome), [value.nome]);
+  const search = (s) => {
+    setText(s);
+    clearTimeout(t.current);
+    if (s.length < 2) { setList([]); return; }
+    t.current = setTimeout(() => api.get('/public/comuni?q=' + encodeURIComponent(s)).then(setList).catch(() => {}), 140);
+  };
+  return (
+    <label className="em-chip" data-ui style={{ position: 'relative' }}>
+      <span>Dove</span>
+      <input type="text" value={text} onChange={(e) => search(e.target.value)} onFocus={(e) => e.target.select()} onBlur={() => setTimeout(() => { setList([]); setText(value.nome); }, 180)} aria-label="Comune dell'immobile" autoComplete="off" />
+      {list.length > 0 && (
+        <span className="em-sugg" style={{ left: 0, top: '100%' }}>
+          {list.slice(0, 6).map((c) => <button type="button" key={c.nome + c.sigla} onMouseDown={() => { onChange(c); setList([]); }}>{c.nome} ({c.sigla})</button>)}
+        </span>
+      )}
+    </label>
+  );
+}
 
 export default function Home() {
   const { boot } = useApp();
-  const nav = useNavigate();
-  const [text, setText] = useState('');
-  const [busy, setBusy] = useState(false);
-  const s = boot?.stats;
-  const describe = async (e) => {
-    e.preventDefault();
-    if (text.trim().length < 5) return;
-    setBusy(true);
-    try {
-      const r = await api.post('/public/describe', { text });
-      const p = new URLSearchParams();
-      if (r.lavori?.length) p.set('lavori', r.lavori.join(','));
-      if (r.mq) p.set('mq', r.mq);
-      p.set('desc', text.slice(0, 500));
-      nav('/quota?' + p.toString());
-    } catch { nav('/quota'); }
+  const cat = boot?.catalog;
+  useReveal(!!cat);
+  const brackets = boot?.fee?.brackets || [{ upTo: 50000, rate: 0.08 }, { upTo: 3000000, rate: 0.06 }, { upTo: null, rate: 0.04 }];
+  const [job, setJob] = useState(JOBS[0]);
+  const [mq, setMq] = useState(85);
+  const [com, setCom] = useState({ nome: 'Trento', sigla: 'TN' });
+  const [lvl, setLvl] = useState(1);
+  const [abitata, setAbitata] = useState(false);
+
+  const q = (lavori, m, extra = {}) => {
+    if (!cat) return null;
+    try { return computeQuote(cat, { level: 1, province: com.sigla, lines: linesFromAnswers({ lavori, mq: m || 90, piani: 1 }), iva: 'nessuna', ...extra }); } catch { return null; }
   };
+  const quote = useMemo(() => q([job.id], job.mq ? mq : 90, { level: lvl, flags: abitata ? ['abitata'] : [], lines: linesFromAnswers({ lavori: [job.id], mq: job.mq ? mq : 90, piani: ['cappotto', 'tetto'].includes(job.id) ? 2 : 1 }) }),
+    [cat, job.id, mq, com.sigla, lvl, abitata]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shown = useCount(quote ? quote.prudent.imponibile : 0);
+  const mainPkg = quote && cat ? cat.packages.find((p) => p.code === quote.lines[0]?.pkg) : null;
+  const quoteHref = `/quota?lavori=${job.id}${job.mq ? `&mq=${mq}` : ''}`;
+  const months = quote?.lines[0]?.duration || 'Il cantiere';
+  const sal = cat?.params?.sal || [];
+
+  // "Scrivilo come lo diresti"
+  const [text, setText] = useState(EXAMPLES[0]);
+  const [parsed, setParsed] = useState(null);
+  const tt = useRef();
+  useEffect(() => {
+    clearTimeout(tt.current);
+    if (text.trim().length < 5) { setParsed(null); return undefined; }
+    tt.current = setTimeout(() => api.post('/public/describe', { text }).then(setParsed).catch(() => setParsed(null)), 350);
+    return () => clearTimeout(tt.current);
+  }, [text]);
+  const typedQuote = useMemo(() => (parsed?.lavori?.length ? q(parsed.lavori, parsed.mq) : null), [cat, parsed, com.sigla]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Frammento del report per le agenzie
+  const report = useMemo(() => {
+    if (!cat) return null;
+    try { return computeQuote(cat, { level: 1, province: 'TN', lines: linesFromAnswers({ lavori: ['completa', 'finestre'], mq: 85 }) }); } catch { return null; }
+  }, [cat]);
+
   return (
-    <div>
-      {/* HERO */}
-      <section className="bg-navy text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
-        <div className="relative max-w-7xl mx-auto px-4 py-16 lg:py-24 grid lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-7">
-            <div className="eyebrow text-blue-300">Il digital contractor</div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mt-3 leading-[1.05]">Sai quanto costa prima di firmare. <span className="text-blue-300">E il prezzo può solo scendere.</span></h1>
-            <p className="mt-5 text-lg text-white/75 max-w-2xl">Lavori descritti voce per voce, uguali per tutte le imprese. Offerte reali di imprese verificate della tua zona. Paghi a stato di avanzamento lavori, con le foto del cantiere.</p>
-            <form onSubmit={describe} className="mt-8 bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 shadow-lift max-w-2xl">
-              <input className="flex-1 px-4 py-3 text-ink outline-none rounded-xl" value={text} onChange={(e) => setText(e.target.value)} placeholder="Scrivi cosa ti serve: «rifare bagno e cucina, 80 mq a Trento»" />
-              <button className="btn-primary btn-lg" disabled={busy}>{busy ? 'Leggo…' : 'Calcola il prezzo'}</button>
-            </form>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {QUICK.map(([id, ic, l]) => <Link key={id} to={`/quota?lavori=${id}`} className="rounded-full bg-white/10 hover:bg-white/20 px-3 py-1.5 text-sm">{ic} {l}</Link>)}
-            </div>
+    <div className="em">
+      {/* La frase col prezzo dentro */}
+      <section className="em-hero wrap" aria-labelledby="h-hero">
+        <h1 id="h-hero">
+          <span className="line"><span><JobMenu job={job} onPick={(j) => { setJob(j); if (j.mq) setMq(j.def); }} /></span></span>
+          <span className="line"><span>costa <span className="price" aria-live="polite">{quote ? eur(shown) : '…'}</span></span></span>
+        </h1>
+        <div className="em-chips act-fade" role="group" aria-label="Dettagli del lavoro">
+          <ComuneChip value={com} onChange={setCom} />
+          <div className="em-chip" data-ui>
+            <span>Materiali</span>
+            <div className="seg">{LEVELS.map((l, i) => <button key={l} type="button" aria-pressed={lvl === i} onClick={() => setLvl(i)}>{l}</button>)}</div>
           </div>
-          <div className="lg:col-span-5">
-            <div className="bg-white text-ink rounded-3xl p-6 shadow-lift">
-              <div className="text-xs font-semibold text-ink-mute uppercase tracking-wide">Esempio reale di calcolo</div>
-              <div className="mt-1 font-bold text-lg">Bagno chiavi in mano, livello intermedio · Rovereto</div>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-ok-soft p-4"><div className="text-xs text-ok font-semibold">Parte fissa</div><div className="text-2xl font-extrabold">{eur(8546 * 1.025)}</div><div className="text-[11px] text-ink-soft">il minimo, a sopralluogo pulito</div></div>
-                <div className="rounded-2xl bg-brand-soft p-4"><div className="text-xs text-brand font-semibold">Prezzo prudente</div><div className="text-2xl font-extrabold">{eur(8546 * 1.1 * 1.025)}</div><div className="text-[11px] text-ink-soft">il massimo: comprende gli imprevisti</div></div>
+          {job.mq ? (
+            <div className="em-chip" data-ui>
+              <span>Superficie</span>
+              <div className="seg" style={{ alignItems: 'center' }}>
+                <button type="button" aria-label="Meno metri quadri" onClick={() => setMq(Math.max(20, mq - 10))}>−</button>
+                <b style={{ minWidth: '4.5ch', textAlign: 'center' }}>{mq} m²</b>
+                <button type="button" aria-label="Più metri quadri" onClick={() => setMq(Math.min(600, mq + 10))}>+</button>
               </div>
-              <ul className="mt-4 space-y-1.5 text-sm text-ink-soft">
-                <li>✓ Voci incluse ed escluse scritte, uguali per tutte le imprese</li>
-                <li>✓ Imprevisti solo con verbale fotografico e variante firmata</li>
-                <li>✓ Prezzi IVA esclusa, oneri della sicurezza compresi</li>
-              </ul>
-              <Link to="/prezzi/R03" className="btn-ghost w-full mt-4">Guarda cosa c'è dentro il pacchetto</Link>
             </div>
+          ) : null}
+          <div className="em-chip" data-ui>
+            <span>Durante i lavori</span>
+            <button type="button" className="sw" aria-pressed={abitata} onClick={() => setAbitata(!abitata)}><i aria-hidden="true" />{abitata ? 'Ci abito' : 'Casa libera'}</button>
+          </div>
+        </div>
+        <p className="sub act-fade">EdilMen calcola il prezzo dei lavori in casa voce per voce e lo mette in gara tra imprese verificate. È il massimo: al sopralluogo può solo scendere.</p>
+        <div className="act act-fade">
+          <Link to={quoteHref} className="btn-em">Ricevi le offerte reali</Link>
+          <a href="#dentro" className="lnk">Cosa c'è dentro questo prezzo</a>
+        </div>
+      </section>
+
+      {/* Il problema */}
+      <section className="em-wait sec" aria-labelledby="h-wait" style={{ paddingTop: 'clamp(72px, 8vw, 140px)' }}>
+        <div className="wrap grid12">
+          <div className="head">
+            <h2 id="h-wait" className="rv">Il preventivo arriva lunedì. Forse.</h2>
+            <p className="rv d1">Mandi foto e misure, l'impresa dice «stasera te lo mando», e passa una settimana. A volte due mesi. Succede in quasi ogni lavoro in casa. Per questo da noi il prezzo c'è prima della telefonata, scritto voce per voce.</p>
+          </div>
+          <div className="calls">
+            <figure className="rv d1"><img src="/img/cliente-attesa.jpg" alt="Un cliente al telefono chiede se il preventivo è pronto" loading="lazy" /><figcaption>«È pronto il preventivo?»</figcaption></figure>
+            <figure className="rv d2"><img src="/img/muratore-telefono.jpg" alt="Un muratore in cantiere promette il preventivo per la sera" loading="lazy" /><figcaption>«Te lo mando stasera!»</figcaption></figure>
+          </div>
+        </div>
+        <div className="wrap">
+          <div className="strip rv"><img src="/img/settimana.jpg" alt="Lo stesso cliente in attesa del preventivo, da lunedì a domenica" loading="lazy" /></div>
+          <div className="days" aria-hidden="true"><span>Lunedì</span><span>Martedì</span><span>Mercoledì</span><span>Giovedì</span><span>Venerdì</span><span>Sabato</span><span>Domenica</span></div>
+        </div>
+      </section>
+
+      {/* Da qui al cantiere */}
+      <section className="em-bar sec wrap" aria-labelledby="h-bar" style={{ paddingTop: 0 }}>
+        <h2 id="h-bar" className="rv">Da qui al cantiere</h2>
+        <div className="bar" data-ui>
+          <div className="seg s1 rv"><strong>Due minuti</strong></div>
+          <div className="seg s2 rv d1"><strong>Due giorni</strong></div>
+          <div className="seg s3 rv d2"><strong>Una settimana</strong></div>
+          <div className="seg s4 rv d3"><strong>{months}</strong></div>
+        </div>
+        <div className="cap">
+          <p>Vedi il prezzo, qui sopra.</p>
+          <p>Arrivano le offerte vere delle imprese della zona.</p>
+          <p>Sopralluogo gratuito: il prezzo può solo scendere. Poi firmi.</p>
+          <p>Il cantiere, che paghi a tappe, solo a lavoro fatto e fotografato.</p>
+        </div>
+        <div className="salhead">
+          <h3 className="rv">Paghi a lavoro fatto</h3>
+          <p className="rv d1">Ogni tappa la chiede l'impresa con le foto, tu la approvi, poi paghi. Nessun extra senza una variante scritta e firmata prima.</p>
+        </div>
+        <div className="sal" data-ui>
+          {sal.map((s, i) => <div key={s.name} className={`rv d${i % 3}`} style={{ flex: s.share * 100 }}><b>{Math.round(s.share * 100)}%</b>{s.name}</div>)}
+        </div>
+      </section>
+
+      {/* Scrivilo come lo diresti */}
+      <section className="em-type sec wrap" aria-labelledby="h-type">
+        <h2 id="h-type" className="rv">Scrivilo come lo diresti</h2>
+        <label className="rv d1">
+          <span className="sr-only">Descrivi il lavoro</span>
+          <span className="field" data-ui><input className="big" value={text} onChange={(e) => setText(e.target.value)} spellCheck="false" /></span>
+        </label>
+        <div className="ex">{EXAMPLES.map((e) => <button key={e} type="button" onClick={() => setText(e)}>{e}</button>)}</div>
+        <div className="answer" aria-live="polite">
+          <div className="rows" data-ui>
+            {!typedQuote ? <div className="row" style={{ color: 'var(--muted)' }}>Scrivi un lavoro: bagno, tetto, finestre, cappotto…</div> : (
+              <>
+                {typedQuote.lines.slice(0, 5).map((l, i) => <div className="row" key={i}><span>{l.name}</span><span>{eur(l.totPrudent)}</span></div>)}
+                <div className="tot"><span>Prezzi di {com.nome}, materiali intermedi</span><span>{eur(typedQuote.prudent.imponibile)}</span></div>
+              </>
+            )}
+          </div>
+          <div className="side">
+            <p>Leggiamo la frase, la traduciamo nei pacchetti del listino e ti diamo il prezzo. Poi solo le domande che servono, una alla volta.</p>
+            <Link className="btn-em" style={{ marginTop: 24 }} to={`/quota?${new URLSearchParams({ lavori: (parsed?.lavori || []).join(','), desc: text, ...(parsed?.mq ? { mq: parsed.mq } : {}) })}`}>Continua da qui</Link>
           </div>
         </div>
       </section>
 
-      {/* PERCORSI */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="eyebrow">Per chi è EdilMen</div>
-        <h2 className="text-3xl font-extrabold mt-2">Dal bagno alla palazzina, la stessa regola: prezzo chiaro, impresa giusta.</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-          {[
-            ['🏠', 'Famiglie', 'Ristrutturi casa, rifai il bagno, metti il fotovoltaico. Prezzo subito, offerte reali, sopralluogo gratuito.', '/quota', 'Calcola il prezzo'],
-            ['🔑', 'Agenzie immobiliari', 'Stima dei lavori per ogni immobile in portafoglio, report da dare all\'acquirente, offerte vere quando serve.', '/agenzie', 'Area agenzie'],
-            ['📈', 'Immobiliaristi e investitori', 'Costo lavori al m² prima dell\'acquisto, operazioni su più unità, gara tra imprese su computo.', '/agenzie', 'Area investitori'],
-            ['🏢', 'Condomini e grandi operazioni', 'Richiesta d\'offerta su computo metrico, confronto voce per voce, anomalie evidenziate.', '/grandi-operazioni', 'Richiedi offerte'],
-          ].map(([ic, t, d, to, cta]) => (
-            <Link key={t} to={to} className="card p-6 hover:shadow-lift transition group">
-              <div className="text-3xl">{ic}</div>
-              <div className="font-bold text-lg mt-3">{t}</div>
-              <p className="text-sm text-ink-soft mt-2">{d}</p>
-              <div className="text-brand font-semibold text-sm mt-4 group-hover:underline">{cta} →</div>
-            </Link>
-          ))}
+      {/* Il cartello di cantiere */}
+      <section className="em-sign wrap" aria-labelledby="h-sign">
+        <div className="head">
+          <h2 id="h-sign" className="rv">Il cartello di cantiere, prima del cantiere</h2>
+          <p className="rv d1">Ogni cantiere in Italia espone un cartello con lavori, importo e tempi. Noi te lo diamo prima di cominciare: è quello che hai scelto in cima alla pagina, scritto come sarà.</p>
+        </div>
+        <div className="card rv" data-ui>
+          <h3>Cartello di cantiere</h3>
+          <div className="sub">Comune di {com.nome} · provincia di {com.sigla}</div>
+          <dl>
+            <dt>Lavori</dt><dd>{mainPkg?.name || job.say}</dd>
+            <dt>Materiali</dt><dd>Livello {LEVELS[lvl].toLowerCase()}</dd>
+            <dt>Titolo abilitativo</dt><dd>{quote?.lines[0]?.permit || '—'}</dd>
+            <dt>Durata prevista</dt><dd>{quote?.lines[0]?.duration || '—'}</dd>
+            <dt>Impresa esecutrice</dt><dd>scelta da te tra le offerte</dd>
+            <dt>Coordinamento</dt><dd>EdilMen</dd>
+          </dl>
+          <div className="imp"><span>Importo massimo dei lavori</span><b>{eur(quote?.prudent.imponibile)}</b></div>
+          <div className="salrow">{sal.map((s) => <span key={s.name} style={{ flex: s.share * 100 }}>{Math.round(s.share * 100)}%</span>)}</div>
+          <p style={{ fontSize: 14, marginTop: 18, color: '#6b5254' }}>Minimo, se il sopralluogo non trova imprevisti: {eur(quote?.fixed.imponibile)}. IVA esclusa.</p>
         </div>
       </section>
 
-      {/* COME FUNZIONA */}
-      <section className="bg-white border-y border-line">
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          <div className="eyebrow">Come funziona</div>
-          <h2 className="text-3xl font-extrabold mt-2">Il cantiere, senza sorprese.</h2>
-          <ol className="grid md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
-            {[
-              ['Descrivi', 'Poche domande, una per schermata. O un vocale.'],
-              ['Vedi il prezzo', 'Dal listino a pacchetti della tua provincia: parte fissa e prezzo prudente.'],
-              ['Ricevi offerte vere', 'Fino a 3 imprese della rete con listino approvato o che hanno risposto all\'invito.'],
-              ['Sopralluogo', 'Gratuito, sul posto o in videochiamata. Il prezzo può solo scendere.'],
-              ['Contratto', 'Firmi con l\'impresa. Piano di pagamento a SAL già scritto.'],
-              ['Cantiere a SAL', 'Ogni tappa con foto: approvi tu, poi paghi. A fine lavori recensisci.'],
-            ].map(([t, d], i) => (
-              <li key={t} className="rounded-2xl bg-paper p-5">
-                <div className="h-8 w-8 rounded-full bg-navy text-white font-bold flex items-center justify-center text-sm">{i + 1}</div>
-                <div className="font-bold mt-3">{t}</div>
-                <p className="text-sm text-ink-soft mt-1">{d}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* FIDUCIA */}
-      <section className="max-w-7xl mx-auto px-4 py-16 grid lg:grid-cols-2 gap-10">
-        <div>
-          <div className="eyebrow">Le nostre regole</div>
-          <h2 className="text-3xl font-extrabold mt-2">La fiducia si costruisce con i fatti, non con le stelline.</h2>
-          <p className="text-ink-soft mt-3">Un'impresa edile non si sceglie come un hotel: il lavoro è irreversibile e costa caro. Per questo EdilMen ha regole scritte nel codice della piattaforma.</p>
-          <Link to="/rating" className="btn-ghost mt-6">Leggi come calcoliamo il rating</Link>
-        </div>
-        <ul className="grid sm:grid-cols-2 gap-3">
-          {[
-            ['Nessuna offerta inventata', 'Vedi solo prezzi di imprese reali. Se non ci sono ancora, te lo diciamo e ti mostriamo il prezzo di riferimento EdilMen.'],
-            ['Il voto non si compra', 'Il rating nasce da recensioni di lavori fatti, documenti verificati e puntualità. Il piano a pagamento non lo cambia.'],
-            ['Stesse voci per tutti', 'Le imprese cambiano il prezzo, non il contenuto del pacchetto. Così il confronto è vero.'],
-            ['Paghi a lavoro fatto', 'Piano SAL 10·30·30·20·10 con foto. Nessun extra senza variante scritta.'],
-          ].map(([t, d]) => (
-            <li key={t} className="card p-5"><div className="font-bold">✓ {t}</div><p className="text-sm text-ink-soft mt-1">{d}</p></li>
-          ))}
-        </ul>
-      </section>
-
-      {/* NUMERI VERI */}
-      <section className="bg-white border-y border-line">
-        <div className="max-w-7xl mx-auto px-4 py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-          <div><div className="text-3xl font-extrabold">{s ? num(s.network) : '—'}</div><div className="text-sm text-ink-soft">imprese nella rete EdilMen</div></div>
-          <div><div className="text-3xl font-extrabold">{s ? num(s.catalog) : '—'}</div><div className="text-sm text-ink-soft">schede di imprese nell'elenco</div></div>
-          <div><div className="text-3xl font-extrabold">{boot?.catalog ? boot.catalog.packages.length : '—'}</div><div className="text-sm text-ink-soft">lavori a pacchetto con prezzo</div></div>
-          <div><div className="text-3xl font-extrabold">{s ? num(s.reviews) : '—'}</div><div className="text-sm text-ink-soft">recensioni verificate di lavori conclusi</div></div>
-          <p className="sm:col-span-2 lg:col-span-4 text-xs text-ink-mute">Numeri letti in tempo reale dal database: non arrotondati, non inventati.</p>
-        </div>
-      </section>
-
-      {/* IMPRESE */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="card p-8 lg:p-12 grid lg:grid-cols-3 gap-8 items-center bg-gradient-to-br from-white to-brand-soft">
-          <div className="lg:col-span-2">
-            <div className="eyebrow">Imprese e artigiani</div>
-            <h2 className="text-3xl font-extrabold mt-2">Lavori completi nella tua zona, clienti verificati, nessun costo d'ingresso.</h2>
-            <p className="text-ink-soft mt-3">EdilMen si paga solo sui lavori che firmi, a ogni SAL: {boot?.fee ? boot.fee.brackets.map((b) => `${num(b.rate * 100)}%${b.upTo ? ' fino a ' + eur(b.upTo) : ' oltre'}`).join(', ') : '8% fino a 50.000 €, 6% fino a 3 M€, 4% oltre'}. Non ti interponiamo tra te e il cliente: firmi e fatturi tu.</p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Link to="/per-le-imprese" className="btn-primary btn-lg">Entra nella rete</Link>
-            <Link to="/rivendica" className="btn-ghost btn-lg">Rivendica la tua scheda</Link>
+      {/* Cosa c'è dentro */}
+      <section id="dentro" className="em-inside sec wrap" aria-labelledby="h-inside">
+        <h2 id="h-inside" className="rv">Cosa c'è dentro {quote ? `i ${eur(quote.prudent.imponibile)}` : 'il prezzo'}</h2>
+        <div className="body grid12">
+          <div className="pic rv"><img src="/img/muratore-telefono.jpg" alt="Un muratore al lavoro in un cantiere di ristrutturazione" loading="lazy" /><p>Le stesse voci per tutte le imprese: cambia il prezzo, non il lavoro.</p></div>
+          <div className="word">Capitolato</div>
+          <div className="table rv d1">
+            {mainPkg ? (
+              <>
+                <div className="grp">Incluso nel prezzo</div>
+                {mainPkg.checklist.filter((c) => c.state === 'incluso').slice(0, 8).map((c, i) => <div className="r" key={i}><span>{c.title}<small>{c.levels?.[lvl]}</small></span><span>Sì</span></div>)}
+                {mainPkg.variables?.length > 0 && <div className="grp">Solo se serve, a misura</div>}
+                {(mainPkg.variables || []).slice(0, 3).map((v) => <div className="r" key={v.code}><span>{v.name}<small>{v.when}</small></span><span>{eur(v.prices[lvl])}/{v.unit}</span></div>)}
+                {mainPkg.checklist.some((c) => c.state === 'escluso') && <div className="grp">Escluso</div>}
+                {mainPkg.checklist.filter((c) => c.state === 'escluso').slice(0, 3).map((c, i) => <div className="r" key={'x' + i}><span>{c.title}</span><span>—</span></div>)}
+                <Link to={`/prezzi/${mainPkg.code}`} className="lnk" style={{ display: 'inline-block', marginTop: 28 }}>Tutte le voci del pacchetto</Link>
+              </>
+            ) : null}
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="max-w-4xl mx-auto px-4 pb-8">
-        <h2 className="text-3xl font-extrabold">Domande frequenti</h2>
-        <div className="mt-6 divide-y divide-line card">
-          {[
-            ['Il prezzo che vedo è vincolante?', 'È il prezzo prudente del pacchetto: comprende un accantonamento per gli imprevisti tipici. Al sopralluogo può solo scendere, fino alla parte fissa. Aumenta solo se aggiungi lavori o se emerge un imprevisto documentato con foto e variante firmata da te.'],
-            ['Quanto costa il servizio?', 'Per chi chiede i preventivi è gratuito. EdilMen è pagata dall\'impresa, solo sui lavori firmati, a ogni stato di avanzamento.'],
-            ['Vedo i nomi delle imprese?', 'Vedi prezzo, tempi, documenti verificati e rating. Il nome lo scopri quando prenoti il sopralluogo: così il confronto resta sul merito.'],
-            ['Le imprese ricevono il mio telefono?', 'Solo se lo autorizzi e solo l\'impresa che scegli. Alle altre passiamo la descrizione del lavoro e il comune.'],
-            ['E se non ci sono imprese nella mia zona?', 'Te lo diciamo chiaramente. Vedi il prezzo di riferimento EdilMen e invitiamo noi le imprese verificate più vicine.'],
-          ].map(([qq, a]) => (
-            <details key={qq} className="p-5 group"><summary className="font-semibold cursor-pointer list-none flex justify-between">{qq}<span className="text-ink-mute group-open:rotate-45 transition">+</span></summary><p className="text-sm text-ink-soft mt-2">{a}</p></details>
-          ))}
+      {/* Agenzie, investitori, condomini */}
+      <section className="em-pro sec wrap" aria-labelledby="h-pro" style={{ paddingTop: 0 }}>
+        <div className="grid12">
+          <div className="txt">
+            <h2 id="h-pro" className="rv">I lavori stimati prima del rogito</h2>
+            <p className="rv d1">Per le agenzie immobiliari, un report dei lavori per ogni immobile, con il nome dell'agenzia, da dare all'acquirente. Per chi investe, il margine dell'operazione prima dell'offerta. Per condomini e palazzine, la gara tra imprese su computo, voce per voce.</p>
+            <ul className="rv d2">
+              <li><Link className="lnk" to="/agenzie">Area agenzie e investitori</Link></li>
+              <li><Link className="lnk" to="/grandi-operazioni">Gara su computo per grandi lavori</Link></li>
+            </ul>
+          </div>
+          <div className="frag rv d1" data-ui aria-label="Esempio di report lavori per un immobile">
+            <div style={{ fontSize: 13, color: '#7a4a4e' }}>Report lavori · esempio per un'agenzia</div>
+            <div className="t">Trilocale in centro a Trento · 85 m²</div>
+            <div className="k">
+              <div>Prezzo richiesto<b>250.000 €</b></div>
+              <div className="d">Lavori, IVA inclusa<b>{report ? eur(report.prudent.totale) : '—'}</b></div>
+              <div>Stima dopo i lavori<b>345.000 €</b></div>
+            </div>
+            <div style={{ marginTop: 16 }}>
+              {report?.lines.map((l, i) => <div className="ln" key={i}><span>{l.name}</span><b>{eur(l.totPrudent)}</b></div>)}
+              {report ? <div className="ln"><span>Sicurezza e spese tecniche</span><b>{eur(report.prudent.sicurezza + report.prudent.tecniche)}</b></div> : null}
+              {report ? <div className="ln"><span>Margine stimato dell'operazione</span><b>{eur(345000 - 250000 - report.prudent.totale)}</b></div> : null}
+            </div>
+            <p style={{ fontSize: 13, color: '#7a4a4e', marginTop: 14 }}>Stessa base di prezzo del calcolo per i privati. Il report porta il logo dell'agenzia.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Per le imprese, in una frase */}
+      <section className="em-plan sec wrap" aria-labelledby="h-plan">
+        <p className="lead rv">Per le imprese e gli artigiani della rete</p>
+        <h2 id="h-plan" className="rv d1">Entri gratis. Paghi <span className="pct">{Math.round(brackets[0].rate * 100)}%</span> se firmi.</h2>
+        <div className="foot">
+          <p className="rv d1">La fee si paga a ogni stato di avanzamento, solo sui lavori che arrivano da EdilMen: {brackets.map((b) => `${Math.round(b.rate * 100)}%${b.upTo ? ` fino a ${eur(b.upTo)}` : ' oltre'}`).join(', ')}. Il contratto lo firmi tu, fatturi tu, il cliente resta tuo.</p>
+          <div className="cta rv d2">
+            <Link to="/per-le-imprese" className="btn-em on-field">Entra nella rete</Link>
+            <Link to="/software-imprese" className="lnk">Il gestionale per l'impresa, da 30 € al mese</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Domande */}
+      <section className="em-faq sec wrap" aria-labelledby="h-faq">
+        <div className="q" style={{ marginBottom: 80 }}><h2 id="h-faq">Le domande vere</h2></div>
+        {[
+          ['Perché il prezzo può solo scendere?', 'Il prezzo che vedi è la parte fissa del pacchetto più un accantonamento per gli imprevisti tipici. Al sopralluogo, se non ci sono, l\'accantonamento sparisce. Sale solo se aggiungi lavori, o per un imprevisto fotografato e approvato da te per iscritto.'],
+          ['Chi sono le imprese?', 'Imprese della zona con visura, DURC, assicurazione e patente a crediti controllati. Il rating nasce dalle recensioni di lavori fatti tramite EdilMen, e nessuno può comprarlo.'],
+          ['Quanto mi costa?', 'Niente. Ci paga l\'impresa, solo sui lavori che firmi con lei, a ogni tappa di pagamento.'],
+          ['Le imprese avranno il mio telefono?', 'Solo quella che scegli, e solo se lo autorizzi. Alle altre passiamo la descrizione del lavoro e il comune.'],
+          ['E se nella mia zona non c\'è nessuno?', 'Te lo diciamo. Vedi comunque il prezzo di riferimento, e invitiamo noi le imprese verificate più vicine.'],
+        ].map(([qq, a]) => <div className="q rv" key={qq}><h3>{qq}</h3><p>{a}</p></div>)}
+      </section>
+
+      {/* Chiusura */}
+      <section className="em-close" aria-labelledby="h-close">
+        <div className="cta wrap">
+          <h2 id="h-close" className="rv">Prima il prezzo.<br />Poi il cantiere.</h2>
+          <div className="row">
+            <p>Tre minuti per sapere quanto costa davvero il tuo lavoro, e chi può farlo vicino a te.</p>
+            <Link to={quoteHref} className="btn-em on-field">Calcola il tuo prezzo</Link>
+          </div>
         </div>
       </section>
     </div>

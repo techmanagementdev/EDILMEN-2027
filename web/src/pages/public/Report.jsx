@@ -23,7 +23,7 @@ export default function Report() {
         <>
           <div className="grid sm:grid-cols-3 gap-3 mt-6">
             <div className="rounded-2xl bg-ok-soft p-4"><div className="text-xs font-bold text-ok">Lavori · minimo</div><div className="text-2xl font-extrabold">{eur(q.fixed.imponibile)}</div></div>
-            <div className="rounded-2xl bg-navy text-white p-4"><div className="text-xs font-bold text-blue-200">Lavori · prezzo prudente</div><div className="text-2xl font-extrabold">{eur(q.prudent.imponibile)}</div></div>
+            <div className="rounded-2xl bg-navy text-white p-4"><div className="text-xs font-bold text-[#d2a9ac]">Lavori · prezzo prudente</div><div className="text-2xl font-extrabold">{eur(q.prudent.imponibile)}</div></div>
             {p.price_ask ? <div className="rounded-2xl bg-paper border border-line p-4"><div className="text-xs font-bold text-ink-soft">Prezzo richiesto + lavori</div><div className="text-2xl font-extrabold">{eur(Number(p.price_ask) + q.prudent.totale)}</div><div className="text-[11px] text-ink-mute">lavori IVA inclusa</div></div> : null}
           </div>
           <div className="mt-6"><QuoteBreakdown quote={q} catalog={boot?.catalog} compact /></div>

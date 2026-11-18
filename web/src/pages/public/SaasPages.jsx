@@ -56,9 +56,9 @@ export function SoftwareLanding() {
   const { boot } = useApp();
   return (
     <div>
-      <section className="bg-navy text-white"><div className="max-w-6xl mx-auto px-4 py-16 lg:py-20 grid lg:grid-cols-2 gap-10 items-center">
+      <section className="hero-field bg-brand text-[#ecebea]"><div className="max-w-6xl mx-auto px-4 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
         <div>
-          <div className="eyebrow text-blue-300">Software per imprese edili e artigiani</div>
+          <div className="text-lg text-[#d2a9ac]">Software per imprese edili e artigiani</div>
           <h1 className="text-4xl sm:text-5xl font-extrabold mt-3 leading-tight">Preventivi in 5 minuti. Cantieri sotto controllo. Lavori nuovi da EdilMen.</h1>
           <p className="text-white/75 text-lg mt-4">Il gestionale pensato per chi è in furgone, non in ufficio: clienti, preventivi dai pacchetti con i tuoi prezzi, accettazione online, diario di cantiere con foto, scadenze di DURC e incassi. Collegato alle richieste della rete EdilMen.</p>
           <div className="flex flex-wrap gap-3 mt-8"><Link to="/iscrizione-impresa" className="btn-primary btn-lg">Prova gratis 30 giorni</Link><Link to="/rivendica" className="btn bg-white/10 hover:bg-white/20 text-white btn-lg">Sei già nell'elenco? Rivendica</Link></div>

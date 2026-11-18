@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink, Link, Navigate, useLocation, use
 import { AppProvider, ToastProvider, useApp, Logo, Spinner } from './ui.jsx';
 
 import Home from './pages/public/Home.jsx';
+import './pages/public/home.css';
 import Wizard from './pages/public/Wizard.jsx';
 import RequestStatus from './pages/public/RequestStatus.jsx';
 import { Directory, CompanyPage } from './pages/public/Companies.jsx';
@@ -38,26 +39,27 @@ const homeFor = (u) => (!u ? '/accedi' : ['admin', 'operatore'].includes(u.role)
 function PublicLayout() {
   const { user } = useApp();
   const [open, setOpen] = useState(false);
-  const links = [['/quota', 'Calcola il prezzo'], ['/imprese', 'Imprese'], ['/prezzi', 'Prezzi'], ['/rating', 'Il rating'], ['/agenzie', 'Agenzie e investitori'], ['/grandi-operazioni', 'Grandi operazioni'], ['/software-imprese', 'Software imprese'], ['/per-le-imprese', 'Per le imprese']];
+  const links = [['/prezzi', 'Prezzi'], ['/imprese', 'Imprese'], ['/agenzie', 'Agenzie e investitori'], ['/grandi-operazioni', 'Grandi lavori'], ['/per-le-imprese', 'Per le imprese']];
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-line no-print">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-6">
-          <Link to="/" aria-label="EdilMen, home"><Logo /></Link>
-          <nav className="hidden lg:flex items-center gap-1 text-sm">
-            {links.slice(1).map(([to, l]) => <NavLink key={to} to={to} className={({ isActive }) => `px-3 py-2 rounded-lg font-medium ${isActive ? 'text-brand' : 'text-ink-soft hover:text-ink'}`}>{l}</NavLink>)}
+    <div className="min-h-screen flex flex-col" style={{ background: '#e2e2e2' }}>
+      <header className="em-nav no-print">
+        <div className="in" style={{ paddingLeft: 'clamp(20px, 3.2vw, 48px)', paddingRight: 'clamp(20px, 3.2vw, 48px)' }}>
+          <Link to="/" className="wm" aria-label="EdilMen, home"><img src="/favicon.svg" alt="" width="22" height="22" />EdilMen</Link>
+          <nav className="links" aria-label="Principale">
+            {links.map(([to, l]) => <NavLink key={to} to={to}>{l}</NavLink>)}
           </nav>
-          <div className="ml-auto flex items-center gap-2">
-            <Link to={homeFor(user)} className="hidden sm:inline-flex btn-ghost">{user ? 'La mia area' : 'Accedi'}</Link>
-            <Link to="/quota" className="btn-primary">Calcola il prezzo</Link>
-            <button className="lg:hidden btn-ghost px-3" onClick={() => setOpen(!open)} aria-label="Menu">☰</button>
+          <div className="right">
+            <Link to={homeFor(user)} className="acc" style={{ color: '#3a1a1d', textDecoration: 'none' }}>{user ? 'La mia area' : 'Accedi'}</Link>
+            <Link to="/quota" className="go">Calcola il prezzo</Link>
+            <button className="burger" onClick={() => setOpen(!open)} aria-expanded={open} aria-label="Menu">{open ? 'Chiudi' : 'Menu'}</button>
           </div>
         </div>
         {open && (
-          <div className="lg:hidden border-t border-line bg-white px-4 py-3 grid gap-1" onClick={() => setOpen(false)}>
-            {links.map(([to, l]) => <Link key={to} to={to} className="py-2 font-medium">{l}</Link>)}
-            <Link to={homeFor(user)} className="py-2 font-semibold text-brand">{user ? 'La mia area' : 'Accedi'}</Link>
-          </div>
+          <nav className="mob" onClick={() => setOpen(false)} aria-label="Menu mobile">
+            {links.map(([to, l]) => <Link key={to} to={to}>{l}</Link>)}
+            <Link to="/software-imprese">Gestionale imprese</Link>
+            <Link to={homeFor(user)}>{user ? 'La mia area' : 'Accedi'}</Link>
+          </nav>
         )}
       </header>
       <main className="flex-1"><Outlet /></main>
@@ -68,35 +70,20 @@ function PublicLayout() {
 
 function Footer() {
   return (
-    <footer className="bg-navy text-white/80 mt-16 no-print">
-      <div className="max-w-7xl mx-auto px-4 py-12 grid gap-10 md:grid-cols-4 text-sm">
-        <div className="md:col-span-1">
-          <Logo light />
-          <p className="mt-3 text-white/60">Il digital contractor: definiamo il lavoro, mettiamo in gara imprese verificate e seguiamo il cantiere fino all'ultimo SAL.</p>
+    <footer className="em em-foot wrap no-print">
+      <div className="top">
+        <div className="notes">
+          <div>EdilMen è un servizio di European Management Institute S.r.l., Via dei Solteri 74, 38121 Trento.</div>
+          <div><Link to="/quota">Calcola il prezzo</Link><br /><Link to="/prezzi">Prezzi dei lavori</Link><br /><Link to="/imprese">Elenco imprese</Link><br /><Link to="/rating">Come nasce il rating</Link></div>
+          <div><Link to="/agenzie">Agenzie e investitori</Link><br /><Link to="/grandi-operazioni">Condomini e grandi lavori</Link><br /><Link to="/per-le-imprese">Imprese e artigiani</Link><br /><Link to="/software-imprese">Gestionale per imprese</Link></div>
         </div>
-        <div>
-          <div className="font-semibold text-white mb-3">Per chi deve costruire</div>
-          <ul className="space-y-2">
-            <li><Link to="/quota">Calcola il prezzo</Link></li><li><Link to="/prezzi">Prezzi dei lavori</Link></li>
-            <li><Link to="/imprese">Elenco imprese</Link></li><li><Link to="/vocale">Mandaci un vocale</Link></li>
-          </ul>
-        </div>
-        <div>
-          <div className="font-semibold text-white mb-3">Professionisti</div>
-          <ul className="space-y-2">
-            <li><Link to="/agenzie">Agenzie immobiliari e investitori</Link></li><li><Link to="/grandi-operazioni">Grandi operazioni e condomini</Link></li>
-            <li><Link to="/per-le-imprese">Imprese e artigiani</Link></li><li><Link to="/software-imprese">Gestionale per imprese</Link></li><li><Link to="/rivendica">Rivendica la scheda</Link></li>
-          </ul>
-        </div>
-        <div>
-          <div className="font-semibold text-white mb-3">Trasparenza</div>
-          <ul className="space-y-2">
-            <li><Link to="/rating">Come calcoliamo il rating</Link></li><li><Link to="/privacy">Privacy</Link></li><li><Link to="/termini">Termini</Link></li>
-          </ul>
-        </div>
+        <a href="#top" className="up" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Torna su</a>
       </div>
-      <div className="border-t border-white/10 text-xs text-white/50">
-        <div className="max-w-7xl mx-auto px-4 py-4">EdilMen è un servizio di European Management Institute S.r.l. · Trento</div>
+      <Link to="/vocale" className="big">Mandaci un vocale.</Link>
+      <div className="meta">
+        <nav aria-label="Note legali"><Link to="/privacy">Privacy</Link><Link to="/termini">Termini</Link><Link to="/rivendica">Rivendica la scheda</Link></nav>
+        <span className="c">Trentino-Alto Adige e Veneto</span>
+        <span className="r">© {new Date().getFullYear()} EdilMen</span>
       </div>
     </footer>
   );

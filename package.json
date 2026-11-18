@@ -17,6 +17,7 @@
     "seed:catalog": "node scripts/build-seed-catalog.js"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "bcryptjs": "^2.4.3",
