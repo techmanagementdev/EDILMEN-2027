@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.ico" sizes="32x32"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>Centralino EdilMen</title>
+<link rel="stylesheet" href="/css/fonts.css">
+<style>
+:root{--bg:#F3F6FD;--surface:#fff;--ink:#10204A;--ink2:#2A3350;--muted:#5E6782;--line:#E1E6F1;--blue:#1447E6;--blue-d:#0F37B8;--blue-soft:#EAF0FF;
+  --green:#1D7F48;--green-soft:#E1F4E8;--amber:#B26A00;--amber-soft:#FFF3DC;--red:#B42318;--red-soft:#FDECE5;--orange:#FF6A2B}
+*{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:Figtree,system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;line-height:1.2}h1,h2{font-family:Newsreader,Georgia,serif;font-weight:600}p{margin:0}a{color:var(--blue)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+.hdr{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hdr .wrap{display:flex;align-items:center;gap:12px;height:58px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.15rem;text-decoration:none;color:var(--ink)}.logo svg{width:26px;height:18px}
+.hdr .sp{flex:1}.hdr small{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;border-radius:10px;padding:11px 16px;border:0;cursor:pointer;text-decoration:none;min-height:44px}
+.btn-blue{background:var(--blue);color:#fff}.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink2)}.btn-go{background:var(--orange);color:#fff}
+.btn-sm{padding:7px 12px;min-height:36px;font-size:.92rem}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.fld{display:grid;gap:4px}.fld span{font-size:.88rem;font-weight:600;color:var(--ink2)}
+.inp{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.muted{color:var(--muted)}.small{font-size:.88rem}
+.msg{background:var(--red-soft);color:var(--red);border-radius:10px;padding:10px 12px;font-weight:600}
+main{padding:16px 0 90px}
+.oggi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.oggi div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}.oggi b{display:block;font-size:1.4rem}.oggi span{font-size:.78rem;color:var(--muted)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px;font-weight:700;color:var(--ink2);cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.lista{display:grid;gap:8px}
+.riga{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;text-align:left;width:100%}
+.riga b{display:block}.riga .sp{flex:1;min-width:0}.riga small{color:var(--muted)}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:.78rem;font-weight:700;background:var(--blue-soft);color:var(--blue-d);white-space:nowrap}
+.pill.richiamare{background:var(--amber-soft);color:var(--amber)}.pill.interessata{background:var(--green-soft);color:var(--green)}
+.tel{font-size:.85rem;color:var(--green);font-weight:700}.tel.no{color:var(--amber)}
+.scheda{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto}
+.scheda .top{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:10px;align-items:center}
+.scheda .top h2{font-size:1.15rem;flex:1;font-family:Figtree,sans-serif;font-weight:800}
+.blocco{margin-top:12px}
+.chiama{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.chiama .btn{flex:1}
+.esiti{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.esiti .btn{min-height:48px}
+.esiti .ok{background:var(--green);color:#fff}.esiti .no{background:#fff;border:1.5px solid var(--line);color:var(--ink2)}.esiti .stop{background:var(--red-soft);color:var(--red)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px}details+details{margin-top:8px}
+summary{font-weight:700;cursor:pointer}details ol,details ul{padding-left:20px;margin:8px 0 0}details li{margin:6px 0}
+.cop b{color:var(--blue-d)}
+.cop .gancio{background:#FFF3EC;border-left:4px solid var(--orange,#FF6A2B);border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.5}
+.sim{display:grid;gap:10px}.sim .ris{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sim .ris div{background:var(--blue-soft);border-radius:12px;padding:10px}.sim .ris b{display:block;font-size:1.25rem}.sim .ris span{font-size:.82rem;color:var(--ink2)}
+.avviso{background:var(--amber-soft);color:#6B4200;border-radius:10px;padding:10px 12px;font-size:.9rem}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:10px 16px;z-index:40;font-weight:600}
+@media (max-width:520px){.oggi{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hdr"><div class="wrap">
+  <span class="logo"><svg viewBox="0 0 26 18" aria-hidden="true"><path fill="#1447E6" d="M6.5 18A6.5 6.5 0 0 1 5.3 5.1 7.5 7.5 0 0 1 19.6 4a7 7 0 0 1-.1 14z"/></svg>Centralino</span>
+  <span class="sp"></span><small id="chi"></small><button class="btn btn-ghost btn-sm" id="esci" hidden>Esci</button>
+</div></header>
+<main><div class="wrap" id="app"><p class="muted">Carico...</p></div></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/listino.js"></script>
+<script src="js/centralino.js"></script>
+</body>
+</html>

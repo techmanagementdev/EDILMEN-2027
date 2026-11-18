@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="32x32"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
+<title>Come calcoliamo il rating delle imprese edili | EdilMen</title>
+<meta name="description" content="Il metodo del rating EdilMen: recensioni solo di lavori conclusi, documenti verificati e comportamento sulle richieste. Pesi, regole e cosa non conta.">
+<link rel="canonical" href="https://www.edilmen.it/rating">
+<meta property="og:type" content="article"><meta property="og:site_name" content="EdilMen"><meta property="og:locale" content="it_IT">
+<meta property="og:title" content="Come calcoliamo il rating delle imprese edili"><meta property="og:url" content="https://www.edilmen.it/rating">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="css/imprese.css">
+</head>
+<body>
+<header class="hdr"><div class="wrap">
+  <a class="logo" href="index.html" aria-label="EdilMen home"><svg viewBox="0 0 26 18" aria-hidden="true"><path fill="#1447E6" d="M6.5 18A6.5 6.5 0 0 1 5.3 5.1 7.5 7.5 0 0 1 19.6 4a7 7 0 0 1-.1 14z"/></svg>edilmen</a>
+  <nav aria-label="Principale"><a href="/imprese">Imprese</a><a href="rating.html">Come funziona il rating</a><a href="aziende.html">Per le aziende</a></nav>
+  <a class="btn btn-cta" href="index.html#preventivo">Calcola il prezzo</a>
+</div></header>
+
+<!-- Metodo in BOZZA: pesi e soglie da far approvare al cliente. Se cambiano, aggiornare anche server/lib/rating.mjs -->
+<main><div class="wrap testo">
+  <h1>Come calcoliamo il rating delle imprese</h1>
+  <p class="lead">Il rating EdilMen va da 1 a 5 e si basa solo su dati che possiamo verificare. Non ci sono voti dati a sensazione, e nessuna impresa può pagare per alzarlo.</p>
+
+  <h2>Le tre parti del rating</h2>
+  <table class="pesi">
+    <thead><tr><th>Cosa misuriamo</th><th>Peso</th><th>Da dove arriva</th></tr></thead>
+    <tbody>
+      <tr><td><b>Recensioni dei clienti</b></td><td>60%</td><td>Solo clienti che hanno fatto un lavoro con l'impresa tramite EdilMen. Ogni recensione dà un voto da 1 a 5 su qualità del lavoro, puntualità, rispetto del preventivo, pulizia del cantiere e comunicazione.</td></tr>
+      <tr><td><b>Documenti verificati</b></td><td>25%</td><td>Controlliamo quattro documenti: visura camerale, DURC, assicurazione di responsabilità civile, patente a crediti per i cantieri. Ognuno vale un quarto, e conta solo se è valido e non scaduto.</td></tr>
+      <tr><td><b>Comportamento sulle richieste</b></td><td>15%</td><td>Quanto spesso l'impresa risponde entro 24 ore alle richieste che le passiamo e quanti sopralluoghi rispetta. Conta da quando ci sono almeno 3 casi.</td></tr>
+    </tbody>
+  </table>
+  <p>Se un'impresa non ha ancora ricevuto abbastanza richieste per misurare il comportamento, quel 15% si divide in proporzione tra recensioni e documenti.</p>
+
+  <h2>Quando il rating viene pubblicato</h2>
+  <ul>
+    <li>Servono almeno <b>3 recensioni</b> di lavori conclusi, controllate dal nostro team.</li>
+    <li>Serve la <b>visura camerale</b> verificata.</li>
+    <li>Prima di allora la scheda mostra "Rating in costruzione" e indica cosa manca.</li>
+  </ul>
+
+  <h2>Recensioni: le regole</h2>
+  <ul>
+    <li>Può scrivere una recensione solo chi ha fatto un lavoro con l'impresa passando da EdilMen: una per lavoro.</li>
+    <li>Contano le recensioni degli ultimi 3 anni. Quelle dell'ultimo anno pesano il doppio di quelle più vecchie.</li>
+    <li>Prima della pubblicazione controlliamo che il lavoro ci sia stato davvero. Non togliamo recensioni negative perché sono negative: le togliamo solo se il lavoro non è verificabile o se contengono insulti o dati personali.</li>
+  </ul>
+
+  <h2>Le verifiche nella scheda</h2>
+  <p>Accanto al rating ogni scheda mostra le verifiche fatte, con la data del controllo e la scadenza: visura, DURC, assicurazione, patente a crediti, ed eventuali attestazione SOA e certificazione ISO 9001. Sono fatti, non giudizi: se un documento scade, la verifica sparisce finché non viene rinnovata.</p>
+
+  <h2>Cosa non conta</h2>
+  <ul>
+    <li>Il piano a pagamento dell'impresa: non cambia il rating.</li>
+    <li>Recensioni prese da altri siti o non legate a un lavoro verificato.</li>
+    <li>Quanto l'impresa è grande o quanto fattura.</li>
+  </ul>
+
+  <h2>Da dove arrivano i dati delle schede</h2>
+  <p>Le schede partono dai dati societari pubblici (ragione sociale, partita IVA, sede, codice ATECO). Ogni scheda indica la fonte e la data dell'ultimo aggiornamento. L'impresa può confermare la propria scheda gratis e aggiungere lavorazioni, zone servite e prezzi. Chiunque può segnalare un dato sbagliato con il pulsante "Segnala un errore" in fondo alla scheda.</p>
+
+  <div class="avviso" style="margin-top:30px"><span><b>Hai un'impresa edile?</b> Conferma gratis la tua scheda e inizia a raccogliere recensioni verificate.</span><a class="btn btn-blue" href="rivendica.html">Rivendica la scheda</a></div>
+</div></main>
+<footer class="ftr"><div class="wrap"><span>EdilMen, il rating delle imprese edili</span><span><a href="/imprese">Elenco imprese</a>, <a href="rivendica.html">rivendica la tua scheda</a>, <a href="/privacy">Privacy</a>, <a href="/cookie">Cookie</a>, <a href="/termini">Termini</a>, <a href="#" data-cookie>Preferenze cookie</a></span><small style="flex-basis:100%;display:block;margin-top:10px;font-size:.78rem;opacity:.75">European Management Institute S.r.l. (business unit EdilMen), Via dei Solteri 74, 38121 Trento, C.F. e P.IVA 02604960225, PEC emi@pec.decaminada.it</small></div></footer>
+<script src="/js/menu.js" defer></script><script src="/js/consenso.js" defer></script><script src="/js/passeggiata.js" defer></script>
+</body>
+</html>
