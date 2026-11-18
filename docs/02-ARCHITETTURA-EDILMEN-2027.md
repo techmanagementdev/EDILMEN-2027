@@ -54,3 +54,18 @@ Railway project "edilmen-2027"
 - Tabelle imprese a strati: dati societari / contatti (corporate vs personali) / dati operativi / consensi, con **fonte e data di controllo** per riga.
 - Il repository GitHub è pubblico: **nessun dato personale né listino reale nel codice**. I dati reali si caricano dall'admin (import Excel/CSV) e vivono solo nel database Railway.
 - Audit log di ogni modifica rilevante.
+
+## 8. Livello SaaS (novembre 2026)
+EdilMen guadagna su due binari: **fee sui lavori** procurati dalla rete e **abbonamento al gestionale** per le imprese (ricavo ricorrente, che pesa di più nella valutazione).
+
+| Piano | Prezzo (impostabile) | Cosa sblocca |
+|---|---|---|
+| Gratis | 0 € | scheda, rivendicazione, inviti a quotare, fee solo sui lavori firmati |
+| Base | 30 €/mese | listino nel quotatore (offerte automatiche), statistiche della scheda, 2 utenti |
+| Plus | 50 €/mese | gestionale completo: clienti, preventivi con accettazione online, cantieri con diario, scadenze; 5 utenti |
+
+- Ogni impresa che si iscrive o rivendica la scheda parte con **30 giorni di prova Plus**; poi torna al piano gratuito finché non paga.
+- Pagamento con bonifico registrato dall'admin (periodo, importo, metodo); MRR calcolato dal database. Aggancio a un pagamento con carta: prossimo passo.
+- Il piano **non cambia mai il rating**.
+- I clienti EdilMen che scelgono l'impresa entrano nel gestionale con un clic, solo se hanno dato il consenso alla condivisione dei contatti.
+- I prezzi reali caricati dalle persone (community) diventano medie pubbliche da 3 quotazioni controllate in su: asset dati proprietario per tarare il listino.

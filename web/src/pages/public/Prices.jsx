@@ -4,6 +4,7 @@ import { territoryCoef } from '@shared/pricing.js';
 import { LAVORI } from '@shared/lavori.js';
 import { useApp, Spinner, eur, num, Badge } from '../../ui.jsx';
 import { Checklist } from './Wizard.jsx';
+import { CommunityBox } from './SaasPages.jsx';
 
 const PROV = [['TN', 'Trento'], ['BZ', 'Bolzano'], ['VR', 'Verona'], ['VI', 'Vicenza'], ['PD', 'Padova'], ['TV', 'Treviso'], ['VE', 'Venezia'], ['BL', 'Belluno'], ['RO', 'Rovigo'], ['UD', 'Udine'], ['PN', 'Pordenone'], ['GO', 'Gorizia'], ['TS', 'Trieste']];
 
@@ -81,6 +82,7 @@ export function PricePage() {
           <ul className="space-y-2 text-sm">{vars.map((v) => <li key={v.code} className="flex justify-between gap-4"><span><b>{v.name}</b> <span className="text-ink-soft">— {v.what}</span></span><Badge tone={v.delta > 0 ? 'amber' : 'green'}>{v.delta > 0 ? '+' : ''}{num(v.delta * 100)}%</Badge></li>)}</ul>
         </div>
       )}
+      <CommunityBox pkg={p} unit={p.unit} />
       <div className="mt-8 flex flex-wrap gap-2">
         <Link to={job ? `/quota?lavori=${job.id}` : '/quota'} className="btn-primary btn-lg">Calcola il prezzo per casa tua</Link>
       </div>

@@ -11,12 +11,15 @@ import { RatingPage, ForCompanies, ClaimPage, JoinPage, AgenciesLanding, BigLand
 import VoicePage from './pages/public/Voice.jsx';
 import { Login, Register } from './pages/public/Auth.jsx';
 import Report from './pages/public/Report.jsx';
+import { PreventivoPage, SoftwareLanding } from './pages/public/SaasPages.jsx';
 
 import { MyRequests, MyRequestDetail, Properties, PropertyDetail, ComputoNew, Profile } from './pages/area/Area.jsx';
 import { ImpresaHome, ImpresaProfile, ImpresaPrices, ImpresaOpportunities, ImpresaSites, ImpresaDocs, ImpresaFees } from './pages/impresa/Impresa.jsx';
 import { AdminDashboard, AdminRequests, AdminRequest } from './pages/admin/AdminRequests.jsx';
 import { AdminCompanies, AdminCompany, AdminPrices, AdminClaims } from './pages/admin/AdminCompanies.jsx';
 import { AdminCatalog, AdminSettings } from './pages/admin/AdminCatalog.jsx';
+import { GDashboard, GClients, GClient, GQuotes, GQuoteEditor, GJobs, GJob, GDeadlines, Subscription, Team, Stats } from './pages/impresa/Gestionale.jsx';
+import { AdminSubscriptions, AdminCommunity } from './pages/admin/AdminSaas.jsx';
 import { AdminContracts, AdminArtisans, AdminReviews, AdminReports, AdminUsers, AdminAudit } from './pages/admin/AdminOther.jsx';
 
 function KeyedWizard() {
@@ -35,7 +38,7 @@ const homeFor = (u) => (!u ? '/accedi' : ['admin', 'operatore'].includes(u.role)
 function PublicLayout() {
   const { user } = useApp();
   const [open, setOpen] = useState(false);
-  const links = [['/quota', 'Calcola il prezzo'], ['/imprese', 'Imprese'], ['/prezzi', 'Prezzi'], ['/rating', 'Il rating'], ['/agenzie', 'Agenzie e investitori'], ['/grandi-operazioni', 'Grandi operazioni'], ['/per-le-imprese', 'Per le imprese']];
+  const links = [['/quota', 'Calcola il prezzo'], ['/imprese', 'Imprese'], ['/prezzi', 'Prezzi'], ['/rating', 'Il rating'], ['/agenzie', 'Agenzie e investitori'], ['/grandi-operazioni', 'Grandi operazioni'], ['/software-imprese', 'Software imprese'], ['/per-le-imprese', 'Per le imprese']];
   return (
     <div className="min-h-screen flex flex-col">
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-line no-print">
@@ -82,7 +85,7 @@ function Footer() {
           <div className="font-semibold text-white mb-3">Professionisti</div>
           <ul className="space-y-2">
             <li><Link to="/agenzie">Agenzie immobiliari e investitori</Link></li><li><Link to="/grandi-operazioni">Grandi operazioni e condomini</Link></li>
-            <li><Link to="/per-le-imprese">Imprese e artigiani</Link></li><li><Link to="/rivendica">Rivendica la scheda</Link></li>
+            <li><Link to="/per-le-imprese">Imprese e artigiani</Link></li><li><Link to="/software-imprese">Gestionale per imprese</Link></li><li><Link to="/rivendica">Rivendica la scheda</Link></li>
           </ul>
         </div>
         <div>
@@ -131,7 +134,10 @@ function SideLayout({ title, nav, roles }) {
         <div className="lg:hidden sticky top-0 z-30 bg-white border-b border-line px-4 h-14 flex items-center justify-between no-print">
           <button className="btn-ghost px-3" onClick={() => setOpen(true)}>☰</button><Logo /><span className="w-10" />
         </div>
-        <div className="p-4 sm:p-8 max-w-7xl"><Outlet /></div>
+        <div className="p-4 sm:p-8 max-w-7xl">
+          {user.must_change_password && <div className="rounded-xl bg-warn-soft text-warn text-sm font-semibold p-3 mb-4 no-print">Stai usando una password provvisoria: cambiala da {user.role === 'impresa' ? '«Team»' : '«Profilo»'}.</div>}
+          <Outlet />
+        </div>
       </div>
     </div>
   );
@@ -149,6 +155,9 @@ const ADMIN_NAV = [
   { to: '/admin/rubrica', label: 'Rubrica artigiani' },
   { to: '/admin/recensioni', label: 'Recensioni' },
   { to: '/admin/segnalazioni', label: 'Segnalazioni' },
+  { to: '/admin/prezzi-community', label: 'Prezzi community' },
+  { section: 'SaaS' },
+  { to: '/admin/abbonamenti', label: 'Abbonamenti e MRR' },
   { section: 'Regole' },
   { to: '/admin/listino', label: 'Listino EdilMen' },
   { to: '/admin/impostazioni', label: 'Fee, piani e matching' },
@@ -157,12 +166,23 @@ const ADMIN_NAV = [
 ];
 const IMPRESA_NAV = [
   { to: '/impresa', label: 'Panoramica', end: true },
+  { section: 'Lavori da EdilMen' },
   { to: '/impresa/opportunita', label: 'Opportunità' },
-  { to: '/impresa/cantieri', label: 'Cantieri e SAL' },
+  { to: '/impresa/cantieri', label: 'Contratti EdilMen e SAL' },
   { to: '/impresa/listino', label: 'Il mio listino' },
+  { to: '/impresa/fee', label: 'Fee EdilMen' },
+  { section: 'Gestionale' },
+  { to: '/impresa/gestionale', label: 'Cruscotto' },
+  { to: '/impresa/clienti', label: 'Clienti' },
+  { to: '/impresa/preventivi', label: 'Preventivi' },
+  { to: '/impresa/cantieri-gestionale', label: 'Cantieri' },
+  { to: '/impresa/scadenze', label: 'Scadenze' },
+  { section: 'Impresa' },
   { to: '/impresa/profilo', label: 'Profilo pubblico' },
   { to: '/impresa/documenti', label: 'Documenti' },
-  { to: '/impresa/fee', label: 'Fee EdilMen' },
+  { to: '/impresa/statistiche', label: 'Statistiche scheda' },
+  { to: '/impresa/team', label: 'Team' },
+  { to: '/impresa/abbonamento', label: 'Abbonamento' },
 ];
 function areaNav(u) {
   const base = [{ to: '/area', label: 'Le mie richieste', end: true }];
@@ -197,12 +217,14 @@ export default function App() {
               <Route path="/agenzie" element={<AgenciesLanding />} />
               <Route path="/grandi-operazioni" element={<BigLanding />} />
               <Route path="/vocale" element={<VoicePage />} />
+              <Route path="/software-imprese" element={<SoftwareLanding />} />
               <Route path="/accedi" element={<Login />} />
               <Route path="/registrati" element={<Register />} />
               <Route path="/privacy" element={<Legal kind="privacy" />} />
               <Route path="/termini" element={<Legal kind="termini" />} />
             </Route>
             <Route path="/report/:token" element={<Report />} />
+            <Route path="/preventivo/:token" element={<PreventivoPage />} />
             <Route path="/area" element={<AreaShell />}>
               <Route index element={<MyRequests />} />
               <Route path="richiesta/:id" element={<MyRequestDetail />} />
@@ -219,6 +241,17 @@ export default function App() {
               <Route path="profilo" element={<ImpresaProfile />} />
               <Route path="documenti" element={<ImpresaDocs />} />
               <Route path="fee" element={<ImpresaFees />} />
+              <Route path="gestionale" element={<GDashboard />} />
+              <Route path="clienti" element={<GClients />} />
+              <Route path="clienti/:id" element={<GClient />} />
+              <Route path="preventivi" element={<GQuotes />} />
+              <Route path="preventivi/:id" element={<GQuoteEditor />} />
+              <Route path="cantieri-gestionale" element={<GJobs />} />
+              <Route path="cantieri-gestionale/:id" element={<GJob />} />
+              <Route path="scadenze" element={<GDeadlines />} />
+              <Route path="statistiche" element={<Stats />} />
+              <Route path="team" element={<Team />} />
+              <Route path="abbonamento" element={<Subscription />} />
             </Route>
             <Route path="/admin" element={<SideLayout title="Amministrazione" nav={ADMIN_NAV} roles={['admin', 'operatore']} />}>
               <Route index element={<AdminDashboard />} />
@@ -236,6 +269,8 @@ export default function App() {
               <Route path="impostazioni" element={<AdminSettings />} />
               <Route path="utenti" element={<AdminUsers />} />
               <Route path="registro" element={<AdminAudit />} />
+              <Route path="abbonamenti" element={<AdminSubscriptions />} />
+              <Route path="prezzi-community" element={<AdminCommunity />} />
             </Route>
             <Route path="*" element={<PublicLayout />}><Route path="*" element={<NotFound />} /></Route>
           </Routes>

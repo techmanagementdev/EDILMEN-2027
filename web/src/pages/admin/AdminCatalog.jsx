@@ -133,6 +133,15 @@ export function AdminSettings() {
           {isAdmin && <button className="btn-ghost mt-2" onClick={() => save('contacts')}>Salva contatti</button>}
         </div>
         <div className="card p-5">
+          <div className="font-bold">Abbonamenti</div>
+          <Field label="Giorni di prova gratuita Plus per le nuove imprese" className="mt-3"><input className="input" type="number" value={v.trial_days} disabled={!isAdmin} onChange={(e) => setS({ ...v, trial_days: Number(e.target.value) })} /></Field>
+          {isAdmin && <button className="btn-ghost mt-2" onClick={() => save('trial_days')}>Salva</button>}
+          <div className="grid grid-cols-2 gap-2 mt-4">{['intestatario', 'iban', 'causale', 'note'].map((k) => <Field key={k} label={k}><input className="input py-1.5" value={v.billing?.[k] || ''} disabled={!isAdmin} onChange={(e) => setS({ ...v, billing: { ...v.billing, [k]: e.target.value } })} /></Field>)}</div>
+          {isAdmin && <button className="btn-ghost mt-2" onClick={() => save('billing')}>Salva dati di pagamento</button>}
+          <label className="flex gap-2 text-sm mt-4"><input type="checkbox" checked={!!v.matching.listinoRequiresPlan} disabled={!isAdmin} onChange={(e) => setS({ ...v, matching: { ...v.matching, listinoRequiresPlan: e.target.checked } })} /> Le offerte automatiche dal listino richiedono un piano Base o Plus (o la prova)</label>
+          {isAdmin && <button className="btn-ghost mt-2" onClick={() => save('matching')}>Salva regola</button>}
+        </div>
+        <div className="card p-5">
           <div className="font-bold">Modalità di incasso predefinita</div>
           <p className="text-sm text-ink-soft mt-1">Decisione aperta D-C: fattura diretta dell'impresa con fee a SAL, oppure escrow presso un istituto di pagamento autorizzato. Si sceglie contratto per contratto.</p>
           <select className="input mt-3" value={v.payment_mode_default} disabled={!isAdmin} onChange={(e) => setS({ ...v, payment_mode_default: e.target.value })}><option value="diretto">Fattura diretta + fee a SAL</option><option value="escrow">Escrow</option></select>

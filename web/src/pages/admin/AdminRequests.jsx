@@ -17,6 +17,8 @@ export function AdminDashboard() {
     [k.prezzi_da_controllare, 'prezzi anomali da controllare', '/admin/prezzi-imprese'],
     [k.recensioni, 'recensioni da verificare', '/admin/recensioni'],
     [k.segnalazioni, 'segnalazioni di errori', '/admin/segnalazioni'],
+    [k.community, 'prezzi community da controllare', '/admin/prezzi-community'],
+    [k.abbonamenti_richiesti, 'imprese che chiedono un piano', '/admin/abbonamenti'],
   ].filter(([n]) => n > 0);
   return (
     <>

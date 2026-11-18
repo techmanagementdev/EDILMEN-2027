@@ -8,7 +8,7 @@ const LV = ['Standard', 'Intermedio', 'Premium'];
 export function ImpresaHome() {
   const { data, loading } = useLoad('/impresa/overview');
   if (loading) return <Spinner />;
-  const { company: c, counts, rating, claim } = data;
+  const { company: c, counts, rating, claim, plan } = data;
   const todo = [];
   if (claim?.status === 'da_approvare') todo.push(['La rivendicazione della scheda è in verifica dal team EdilMen.', null]);
   if (c.status !== 'attiva') todo.push(['Carica visura, DURC e assicurazione: dopo la verifica la scheda diventa attiva.', '/impresa/documenti']);
@@ -18,6 +18,10 @@ export function ImpresaHome() {
   return (
     <>
       <PageTitle title={c.name} sub={`${c.comune || ''}${c.provincia ? ` (${c.provincia})` : ''} · ${c.network ? 'Impresa della rete EdilMen' : c.status === 'attiva' ? 'Scheda attiva' : 'Scheda in verifica'}`} actions={<Link to={`/imprese/${c.slug}`} className="btn-ghost" target="_blank">Vedi la scheda pubblica</Link>} />
+      <div className="rounded-2xl bg-brand-soft p-4 mb-4 flex flex-wrap items-center gap-3 text-sm">
+        <span className="flex-1">Piano <b>{plan.name}</b> · {plan.source === 'prova' ? `prova gratuita fino al ${new Date(plan.trial_until).toLocaleDateString('it-IT')}` : plan.source === 'abbonamento' ? `attivo fino al ${new Date(plan.plan_until).toLocaleDateString('it-IT')}` : 'gratuito'}</span>
+        {plan.caps.crm ? <Link to="/impresa/gestionale" className="btn-primary btn-sm">Apri il gestionale</Link> : <Link to="/impresa/abbonamento" className="btn-primary btn-sm">Sblocca il gestionale</Link>}
+      </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat label="Inviti da quotare" value={counts.inviti} tone="brand" />
         <Stat label="Clienti che ti hanno scelto" value={counts.scelte} />
@@ -164,6 +168,7 @@ export function ImpresaOpportunities() {
                   <Badge tone={label[o.status][1]}>{label[o.status][0]}</Badge>
                   {o.amount && <div className="font-extrabold text-lg mt-1">{eur(o.amount)}</div>}
                   {o.total_ref && o.kind === 'casa' && <div className="text-xs text-ink-mute">riferimento EdilMen {eur(o.total_ref)}</div>}
+                  {o.status === 'scelta' && o.contact_name && <button className="btn-soft btn-sm mt-2 block ml-auto" onClick={async () => { try { const c = await api.post(`/impresa/g/clients/from-offer/${o.id}`); window.location.href = '/impresa/clienti/' + c.id; } catch (e) { toast(e.message, 'err'); } }}>Porta nel gestionale</button>}
                   {['invitata', 'inviata'].includes(o.status) && <button className="btn-primary btn-sm mt-2" onClick={() => { setSel(o); setF({ amount: o.amount || '', start_days: o.start_days || '', note: o.note || '', items: {} }); }}>{o.status === 'invitata' ? 'Quota' : 'Modifica offerta'}</button>}
                 </div>
               </div>
