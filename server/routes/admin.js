@@ -232,6 +232,7 @@ async function saveCompany(id, b, userId) {
   if (com) Object.assign(vals, { comune: com.nome, provincia: com.sigla, regione: com.regione, lat: com.lat, lon: com.lon });
   else if (b.comune) Object.assign(vals, { comune: b.comune, provincia: b.provincia || null });
   if (b.network === true) vals.convention_signed_at = b.convention_signed_at || new Date().toISOString();
+  if (b.network === false) vals.convention_signed_at = null;
   if (!id) {
     vals.slug = slugify(b.name || 'impresa') + '-' + crypto.randomBytes(2).toString('hex');
     vals.checked_at = new Date().toISOString();
