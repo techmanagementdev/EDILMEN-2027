@@ -1,0 +1,22 @@
+name: Copia edilmen.it
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  copia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node legacy/mirror.mjs
+      - name: Salva la copia nel repository
+        run: |
+          git config user.name "edilmen-copia"
+          git config user.email "edilmen-copia@users.noreply.github.com"
+          git add legacy
+          git commit -m "Copia 1:1 di www.edilmen.it ($(date -u +%Y-%m-%dT%H:%MZ))" || echo "Nessuna modifica"
+          git push
