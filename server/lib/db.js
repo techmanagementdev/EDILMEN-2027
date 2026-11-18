@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 pg.types.setTypeParser(1700, (v) => (v == null ? null : Number(v))); // numeric → number
+pg.types.setTypeParser(1082, (v) => v); // date → 'YYYY-MM-DD'
 
 const url = process.env.DATABASE_URL;
 if (!url) console.warn('[db] DATABASE_URL non impostata');

@@ -11,6 +11,7 @@ import { createRequest, logEvent } from '../lib/requests.js';
 import { computoComparison } from './account.js';
 import { readTable, pick } from '../lib/sheets.js';
 import { computeQuote, salPlan, feeFor } from '../../shared/pricing.js';
+import { startTrial, planOf } from '../lib/saas.js';
 
 const r = express.Router();
 const upload = multer({ limits: { fileSize: 20 * 1024 * 1024 } });
@@ -32,6 +33,8 @@ r.get('/dashboard', async (_req, res) => {
     (SELECT count(*) FROM offers WHERE status='invitata')::int AS inviti_aperti,
     (SELECT count(*) FROM reviews WHERE status='da_verificare')::int AS recensioni,
     (SELECT count(*) FROM reports WHERE status='aperta')::int AS segnalazioni,
+    (SELECT count(*) FROM price_reports WHERE status='da_controllare')::int AS community,
+    (SELECT count(*) FROM companies WHERE subscription_status='richiesto')::int AS abbonamenti_richiesti,
     (SELECT count(*) FROM sal WHERE status='richiesto')::int AS sal_da_approvare,
     (SELECT coalesce(sum(value),0) FROM contracts WHERE status<>'annullato') AS gmv,
     (SELECT coalesce(sum(fee_total),0) FROM contracts WHERE status<>'annullato') AS fee_totali,
@@ -266,7 +269,9 @@ r.post('/companies/:id/user', async (req, res) => {
   const email = String(b.email || '').trim().toLowerCase();
   if (!email || String(b.password || '').length < 8) return res.status(400).json({ error: 'Email e password di almeno 8 caratteri' });
   if (await one('SELECT id FROM users WHERE email=$1', [email])) return res.status(409).json({ error: 'Email già usata' });
-  await q("INSERT INTO users(email, password_hash, name, phone, role, company_id) VALUES ($1,$2,$3,$4,'impresa',$5)", [email, await hash(b.password), b.name || null, b.phone || null, req.params.id]);
+  const first = await one('SELECT count(*)::int AS n FROM users WHERE company_id=$1', [req.params.id]);
+  await q("INSERT INTO users(email, password_hash, name, phone, role, company_id, org_role, must_change_password) VALUES ($1,$2,$3,$4,'impresa',$5,$6,true)", [email, await hash(b.password), b.name || null, b.phone || null, req.params.id, first.n ? 'collaboratore' : 'titolare']);
+  await startTrial(req.params.id);
   await audit(req.user.id, 'crea_utente_impresa', 'company', req.params.id, { email });
   res.json({ ok: true });
 });
@@ -488,6 +493,66 @@ r.patch('/users/:id', adminOnly, async (req, res) => {
   if (b.active !== undefined) await q('UPDATE users SET active=$1 WHERE id=$2', [!!b.active, req.params.id]);
   if (b.role && ['admin', 'operatore', 'cliente', 'agenzia', 'investitore', 'impresa'].includes(b.role)) await q('UPDATE users SET role=$1 WHERE id=$2', [b.role, req.params.id]);
   await audit(req.user.id, 'modifica_utente', 'user', req.params.id, { ...b, password: b.password ? '***' : undefined });
+  res.json({ ok: true });
+});
+
+
+// ---------------- Abbonamenti SaaS ----------------
+r.get('/subscriptions', async (_req, res) => {
+  const rows = await many(`SELECT id, name, comune, provincia, plan, subscription_status, trial_until, plan_until, network,
+      (SELECT count(*)::int FROM users u WHERE u.company_id=companies.id AND u.active) AS utenti
+    FROM companies WHERE subscription_status <> 'nessuno' OR plan <> 'free' OR trial_until IS NOT NULL ORDER BY (subscription_status='richiesto') DESC, plan_until NULLS LAST, name`);
+  const plans = await getSetting('plans');
+  const out = [];
+  for (const c of rows) out.push({ ...c, effective: await planOf(c) });
+  const price = Object.fromEntries(plans.map((p) => [p.id, p.price]));
+  const mrr = out.filter((c) => c.effective.source === 'abbonamento').reduce((s, c) => s + (price[c.effective.id] || 0), 0);
+  const payments = await many('SELECT p.*, c.name AS company_name FROM payments p JOIN companies c ON c.id=p.company_id ORDER BY p.created_at DESC LIMIT 100');
+  res.json({
+    rows: out, payments, mrr,
+    counts: {
+      prova: out.filter((c) => c.effective.source === 'prova').length,
+      paganti: out.filter((c) => c.effective.source === 'abbonamento').length,
+      richieste: out.filter((c) => c.subscription_status === 'richiesto').length,
+      scaduti: out.filter((c) => c.plan_until && new Date(c.plan_until) < new Date()).length,
+    },
+  });
+});
+r.post('/subscriptions/:companyId/payment', async (req, res) => {
+  const b = req.body || {};
+  const plans = await getSetting('plans');
+  const p = plans.find((x) => x.id === b.plan);
+  const months = Math.max(1, Math.min(24, Number(b.months) || 1));
+  if (!p || p.id === 'free') return res.status(400).json({ error: 'Piano non valido' });
+  const c = await one('SELECT plan_until FROM companies WHERE id=$1', [req.params.companyId]);
+  if (!c) return res.status(404).json({ error: 'Impresa non trovata' });
+  const start = c.plan_until && new Date(c.plan_until) > new Date() ? new Date(c.plan_until) : new Date();
+  const end = new Date(start); end.setMonth(end.getMonth() + months);
+  const iso = (d) => d.toISOString().slice(0, 10);
+  await q('INSERT INTO payments(company_id, plan, amount, months, method, period_start, period_end, note, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+    [req.params.companyId, p.id, Number(b.amount) || p.price * months, months, b.method || 'bonifico', iso(start), iso(end), b.note || null, req.user.id]);
+  await q("UPDATE companies SET plan=$1, subscription_status='attivo', plan_until=$2 WHERE id=$3", [p.id, iso(end), req.params.companyId]);
+  await audit(req.user.id, 'pagamento_abbonamento', 'company', req.params.companyId, { plan: p.id, months });
+  res.json({ ok: true, until: iso(end) });
+});
+r.patch('/subscriptions/:companyId', async (req, res) => {
+  const b = req.body || {};
+  if (b.action === 'annulla') await q("UPDATE companies SET subscription_status='annullato' WHERE id=$1", [req.params.companyId]);
+  else if (b.action === 'prova') await q('UPDATE companies SET trial_until = current_date + $2::int WHERE id=$1', [req.params.companyId, Number(b.days) || 30]);
+  else if (b.action === 'fine_prova') await q('UPDATE companies SET trial_until = current_date - 1 WHERE id=$1', [req.params.companyId]);
+  else return res.status(400).json({ error: 'Azione non valida' });
+  await audit(req.user.id, 'abbonamento_' + b.action, 'company', req.params.companyId, b);
+  res.json({ ok: true });
+});
+
+// ---------------- Prezzi dalla community ----------------
+r.get('/community-prices', async (req, res) => {
+  const st = req.query.status || 'da_controllare';
+  res.json(await many('SELECT * FROM price_reports WHERE ($1 = \'tutte\' OR status=$1) ORDER BY created_at DESC LIMIT 300', [st]));
+});
+r.patch('/community-prices/:id', async (req, res) => {
+  if (!['approvata', 'rifiutata', 'da_controllare'].includes(req.body?.status)) return res.status(400).json({ error: 'Stato non valido' });
+  await q('UPDATE price_reports SET status=$1 WHERE id=$2', [req.body.status, req.params.id]);
   res.json({ ok: true });
 });
 

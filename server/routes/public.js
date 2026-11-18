@@ -9,6 +9,7 @@ import { clientOffers, ratingFor } from '../lib/network.js';
 import { classify } from '../lib/ai.js';
 import { sendMail, mailEnabled } from '../lib/mail.js';
 import { hash, setSession } from '../lib/auth.js';
+import { startTrial, trackView } from '../lib/saas.js';
 
 const r = express.Router();
 const upload = multer({ limits: { fileSize: 15 * 1024 * 1024 } });
@@ -138,6 +139,7 @@ r.get('/companies', async (req, res) => {
 r.get('/companies/:slug', async (req, res) => {
   const c = await one('SELECT * FROM companies WHERE slug=$1', [req.params.slug]);
   if (!c || c.status === 'sospesa') return res.status(404).json({ error: 'Impresa non trovata' });
+  trackView(c.id).catch(() => {});
   const rating = await ratingFor(c.id);
   const reviews = await many("SELECT scores, text, created_at FROM reviews WHERE company_id=$1 AND status='pubblicata' ORDER BY created_at DESC LIMIT 20", [c.id]);
   const docs = await many("SELECT kind, valid_until, verified_at FROM company_docs WHERE company_id=$1 AND status='verificato' AND (valid_until IS NULL OR valid_until >= current_date)", [c.id]);
@@ -194,6 +196,7 @@ r.post('/claim/verify', writeLimit, async (req, res) => {
   const status = cl.domain_match ? 'approvato' : 'da_approvare';
   await q('UPDATE claims SET status=$1, verified_at=now(), user_id=$2 WHERE id=$3', [status, u.id, cl.id]);
   if (cl.domain_match) await q('UPDATE companies SET claimed_at=now(), contact_email=COALESCE(contact_email,$1) WHERE id=$2', [cl.email, cl.company_id]);
+  await startTrial(cl.company_id);
   await audit(u.id, 'claim', 'company', cl.company_id, { status });
   setSession(res, u);
   res.json({ ok: true, approved: cl.domain_match });
@@ -214,6 +217,7 @@ r.post('/join', writeLimit, async (req, res) => {
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'da_verificare','iscrizione',$10,$11,$12,now(),now()) RETURNING id`,
     [slug, b.name, vat, com?.nome || b.comune || null, com?.sigla || null, com?.regione || null, com?.lat ?? null, com?.lon ?? null, Array.isArray(b.categories) ? b.categories : [], b.contactName || null, email, b.phone || null]);
   const u = await one("INSERT INTO users(email, password_hash, name, phone, role, company_id) VALUES ($1,$2,$3,$4,'impresa',$5) RETURNING *", [email, await hash(b.password), b.contactName || null, b.phone || null, c.id]);
+  await startTrial(c.id);
   await audit(u.id, 'iscrizione_impresa', 'company', c.id);
   setSession(res, u);
   res.json({ ok: true });
@@ -229,6 +233,49 @@ r.get('/report/:token', async (req, res) => {
     agency: { name: row.agency_name, phone: row.agency_phone, email: row.agency_email },
     offers: await clientOffers(row.id),
   });
+});
+
+
+// ---------------- Preventivo dell'impresa (gestionale) consultabile e accettabile online ----------------
+r.get('/preventivo/:token', async (req, res) => {
+  const x = await one(`SELECT x.*, c.name AS company_name, c.vat AS company_vat, c.address AS company_address, c.comune AS company_comune, c.provincia AS company_provincia,
+      c.contact_phone AS company_phone, c.contact_email AS company_email, c.website AS company_website, c.slug AS company_slug, c.network,
+      cl.name AS client_name, cl.address AS client_address, cl.comune AS client_comune
+    FROM crm_quotes x JOIN companies c ON c.id=x.company_id LEFT JOIN crm_clients cl ON cl.id=x.client_id WHERE x.share_token=$1`, [req.params.token]);
+  if (!x) return res.status(404).json({ error: 'Preventivo non trovato' });
+  res.json(x);
+});
+r.post('/preventivo/:token/answer', writeLimit, async (req, res) => {
+  const x = await one('SELECT id, status, client_id FROM crm_quotes WHERE share_token=$1', [req.params.token]);
+  if (!x) return res.status(404).json({ error: 'Preventivo non trovato' });
+  if (x.status !== 'inviato') return res.status(400).json({ error: 'Questo preventivo ha già una risposta' });
+  const st = req.body?.accept ? 'accettato' : 'rifiutato';
+  await q('UPDATE crm_quotes SET status=$1, answered_at=now(), answer_note=$2 WHERE id=$3', [st, String(req.body?.note || '').slice(0, 1000), x.id]);
+  if (st === 'accettato' && x.client_id) await q("UPDATE crm_clients SET stage='cliente', updated_at=now() WHERE id=$1", [x.client_id]);
+  res.json({ ok: true, status: st });
+});
+
+// ---------------- Prezzi dalla community ----------------
+r.post('/community-prices', writeLimit, upload.single('file'), async (req, res) => {
+  const b = req.body || {};
+  const cat = await getCatalog();
+  const p = cat.packages.find((x) => x.code === b.pkg);
+  const amount = Number(b.amount), qty = Number(b.qty) || 1, year = Number(b.year) || new Date().getFullYear();
+  if (!p || !(amount > 0)) return res.status(400).json({ error: 'Scegli il lavoro e indica l\'importo' });
+  if (year < 2018 || year > new Date().getFullYear()) return res.status(400).json({ error: 'Anno non valido' });
+  const com = findComune(b.comune);
+  let fileId = null;
+  if (req.file) fileId = (await one("INSERT INTO files(kind, mime, name, size, data) VALUES ('preventivo_community',$1,$2,$3,$4) RETURNING id", [req.file.mimetype, req.file.originalname, req.file.size, req.file.buffer])).id;
+  await q('INSERT INTO price_reports(pkg, level, comune, provincia, amount, qty, year, description, email, file_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
+    [p.code, b.level !== undefined && b.level !== '' ? Number(b.level) : null, com?.nome || null, com?.sigla || null, amount, qty, year, String(b.description || '').slice(0, 1000), isEmail(b.email) ? b.email : null, fileId]);
+  res.json({ ok: true });
+});
+r.get('/community-prices/:pkg', async (req, res) => {
+  const rows = await many("SELECT amount / NULLIF(qty,0) AS unit, provincia, year FROM price_reports WHERE pkg=$1 AND status='approvata' AND year >= extract(year from now())::int - 3", [req.params.pkg]);
+  const u = rows.map((x) => Number(x.unit)).filter((x) => x > 0).sort((a, b) => a - b);
+  if (u.length < 3) return res.json({ n: u.length, published: false });
+  const pick = (f) => u[Math.min(u.length - 1, Math.floor(f * (u.length - 1)))];
+  res.json({ n: u.length, published: true, p25: pick(0.25), median: pick(0.5), p75: pick(0.75) });
 });
 
 r.get('/comune', (req, res) => res.json(findComune(req.query.nome, req.query.sigla)));

@@ -11,6 +11,7 @@ import publicRoutes from './routes/public.js';
 import { auth, me } from './routes/account.js';
 import impresa from './routes/impresa.js';
 import admin from './routes/admin.js';
+import gestionale from './routes/gestionale.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -39,6 +40,7 @@ app.get('/api/health', async (_req, res) => {
 app.use('/api/public', publicRoutes);
 app.use('/api/auth', auth);
 app.use('/api/me', me);
+app.use('/api/impresa/g', gestionale);
 app.use('/api/impresa', impresa);
 app.use('/api/admin', admin);
 
@@ -52,6 +54,7 @@ app.get('/api/files/:id', async (req, res) => {
     const rel = await one(`SELECT 1 FROM sal s JOIN contracts k ON k.id=s.contract_id JOIN requests r ON r.id=k.request_id
        WHERE $1 = ANY(s.photos) AND (k.client_user=$2 OR r.user_id=$2 OR k.company_id=$3) LIMIT 1`, [f.id, req.user.id, req.user.company_id || -1]);
     ok = !!rel;
+    if (!ok && req.user.company_id) ok = !!(await one('SELECT 1 FROM crm_job_logs l JOIN crm_jobs j ON j.id=l.job_id WHERE $1 = ANY(l.photos) AND j.company_id=$2 LIMIT 1', [f.id, req.user.company_id]));
   }
   if (!ok) return res.status(403).end();
   res.setHeader('Content-Type', f.mime || 'application/octet-stream');

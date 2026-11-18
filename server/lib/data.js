@@ -42,12 +42,14 @@ const cache = new Map();
 export const DEFAULT_SETTINGS = {
   fee_rules: DEFAULT_FEE_RULES,
   plans: [
-    { id: 'free', name: 'Scheda gratuita', price: 0, features: ['Scheda pubblica', 'Rivendicazione e questionario', 'Richieste compatibili nella tua zona'] },
-    { id: 'base', name: 'Base', price: 30, features: ['Più visibilità nell\'elenco', 'Comparsa nel quotatore con il tuo listino', 'Report mensile di visite'] },
-    { id: 'plus', name: 'Plus', price: 50, features: ['Tutto di Base', 'CRM EdilManager e cloud documenti', 'Scadenziario e opportunità di gara'] },
+    { id: 'free', name: 'Scheda gratuita', price: 0, caps: { listino: false, report: false, crm: false, team: 1 }, features: ['Scheda pubblica e rivendicazione', 'Inviti a quotare le richieste compatibili', 'Fee solo sui lavori firmati'] },
+    { id: 'base', name: 'Base', price: 30, caps: { listino: true, report: true, crm: false, team: 2 }, features: ['Il tuo listino nel quotatore: le offerte partono da sole', 'Report mensile di visite alla scheda', 'Più visibilità nell\'elenco', '2 utenti'] },
+    { id: 'plus', name: 'Plus', price: 50, caps: { listino: true, report: true, crm: true, team: 5 }, features: ['Tutto di Base', 'Gestionale: clienti, preventivi, cantieri, scadenze', 'Preventivi con accettazione online', '5 utenti'] },
   ],
-  matching: { radiusKm: 60, maxOffers: 3, inviteTop: 3, priceHigh: 0.15, priceAnomalous: -0.25 },
+  trial_days: 30,
+  matching: { listinoRequiresPlan: true, radiusKm: 60, maxOffers: 3, inviteTop: 3, priceHigh: 0.15, priceAnomalous: -0.25 },
   payment_mode_default: 'diretto',
+  billing: { intestatario: 'European Management Institute S.r.l.', iban: '', causale: 'Abbonamento EdilMen {piano} — {impresa}', note: 'Dopo il bonifico attiviamo il piano entro un giorno lavorativo.' },
   consent_version: '2027-01',
   contacts: { phone: '', email: '', whatsapp: '' },
 };

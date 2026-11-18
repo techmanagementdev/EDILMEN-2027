@@ -7,6 +7,9 @@ import { getCatalog, getSetting, findComune } from '../lib/data.js';
 import { ratingFor } from '../lib/network.js';
 import { logEvent } from '../lib/requests.js';
 import { computeQuote, feeFor } from '../../shared/pricing.js';
+import { planOf, can } from '../lib/saas.js';
+import { hash } from '../lib/auth.js';
+import crypto from 'node:crypto';
 
 const r = express.Router();
 const upload = multer({ limits: { fileSize: 12 * 1024 * 1024, files: 10 } });
@@ -23,7 +26,7 @@ r.get('/overview', async (req, res) => {
             (SELECT count(*) FROM contracts WHERE company_id=$1 AND status='attivo')::int AS cantieri,
             (SELECT count(*) FROM company_prices WHERE company_id=$1)::int AS prezzi,
             (SELECT coalesce(sum(fee),0) FROM sal s JOIN contracts k ON k.id=s.contract_id WHERE k.company_id=$1 AND s.status IN ('approvato','pagato') AND s.fee_paid_at IS NULL) AS fee_aperte`, [c.id]);
-  res.json({ company: c, claim, rating: await ratingFor(c.id), counts, plans: await getSetting('plans'), fee: c.fee_rules || (await getSetting('fee_rules')) });
+  res.json({ company: c, claim, rating: await ratingFor(c.id), counts, plan: await planOf(c), plans: await getSetting('plans'), fee: c.fee_rules || (await getSetting('fee_rules')) });
 });
 
 r.put('/profile', async (req, res) => {
@@ -158,6 +161,66 @@ r.get('/fees', async (req, res) => {
   const c = await one('SELECT fee_rules FROM companies WHERE id=$1', [cid(req)]);
   const rules = c.fee_rules || (await getSetting('fee_rules'));
   res.json({ rows, rules, example: [30000, 100000, 500000].map((v) => ({ value: v, ...feeFor(v, rules) })) });
+});
+
+
+// ---- Abbonamento (SaaS)
+r.get('/subscription', async (req, res) => {
+  const c = await one('SELECT * FROM companies WHERE id=$1', [cid(req)]);
+  res.json({
+    plan: await planOf(c), plans: await getSetting('plans'), billing: await getSetting('billing'),
+    payments: await many('SELECT plan, amount, months, method, period_start, period_end, created_at FROM payments WHERE company_id=$1 ORDER BY created_at DESC', [c.id]),
+    requested: c.subscription_status === 'richiesto' ? c.plan : null,
+  });
+});
+r.post('/subscription/request', async (req, res) => {
+  const plans = await getSetting('plans');
+  const p = plans.find((x) => x.id === req.body?.plan);
+  if (!p || p.id === 'free') return res.status(400).json({ error: 'Piano non valido' });
+  const c = await one('SELECT subscription_status FROM companies WHERE id=$1', [cid(req)]);
+  if (c.subscription_status === 'attivo') await q('UPDATE companies SET plan=$1 WHERE id=$2', [p.id, cid(req)]);
+  else await q("UPDATE companies SET plan=$1, subscription_status='richiesto' WHERE id=$2", [p.id, cid(req)]);
+  await audit(req.user.id, 'richiesta_abbonamento', 'company', cid(req), { plan: p.id, months: req.body?.months || 1 });
+  res.json({ ok: true });
+});
+
+// ---- Team: più utenti per impresa, secondo il piano
+r.get('/team', async (req, res) => {
+  const c = await one('SELECT * FROM companies WHERE id=$1', [cid(req)]);
+  const plan = await planOf(c);
+  res.json({ max: plan.caps.team || 1, users: await many('SELECT id, email, name, phone, org_role, active, last_login_at, created_at FROM users WHERE company_id=$1 ORDER BY created_at', [cid(req)]) });
+});
+r.post('/team', async (req, res) => {
+  const me = await one('SELECT org_role FROM users WHERE id=$1', [req.user.id]);
+  if (me.org_role !== 'titolare') return res.status(403).json({ error: 'Solo il titolare aggiunge colleghi' });
+  const c = await one('SELECT * FROM companies WHERE id=$1', [cid(req)]);
+  const plan = await planOf(c);
+  const n = await one('SELECT count(*)::int AS n FROM users WHERE company_id=$1 AND active', [cid(req)]);
+  if (n.n >= (plan.caps.team || 1)) return res.status(402).json({ error: `Il piano ${plan.name} include ${plan.caps.team || 1} utent${(plan.caps.team || 1) > 1 ? 'i' : 'e'}: passa a un piano superiore per aggiungerne altri`, upgrade: true });
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Email non valida' });
+  if (await one('SELECT id FROM users WHERE email=$1', [email])) return res.status(409).json({ error: 'Questa email ha già un account' });
+  const temp = crypto.randomBytes(6).toString('base64url');
+  await q("INSERT INTO users(email, password_hash, name, phone, role, company_id, org_role, must_change_password) VALUES ($1,$2,$3,$4,'impresa',$5,'collaboratore',true)", [email, await hash(temp), req.body?.name || null, req.body?.phone || null, cid(req)]);
+  await audit(req.user.id, 'aggiunto_collega', 'company', cid(req), { email });
+  res.json({ ok: true, tempPassword: temp });
+});
+r.delete('/team/:id', async (req, res) => {
+  const me = await one('SELECT org_role FROM users WHERE id=$1', [req.user.id]);
+  if (me.org_role !== 'titolare' || Number(req.params.id) === req.user.id) return res.status(403).json({ error: 'Non consentito' });
+  await q('UPDATE users SET active=false WHERE id=$1 AND company_id=$2', [req.params.id, cid(req)]);
+  res.json({ ok: true });
+});
+
+// ---- Statistiche della scheda pubblica (piano Base o superiore)
+r.get('/stats', async (req, res) => {
+  const c = await one('SELECT * FROM companies WHERE id=$1', [cid(req)]);
+  const ok = await can(c, 'report');
+  const months = await many(`SELECT to_char(date_trunc('month', day),'YYYY-MM') AS mese, sum(views)::int AS visite, sum(in_quotes)::int AS quotazioni
+     FROM profile_stats WHERE company_id=$1 AND day > current_date - interval '12 months' GROUP BY 1 ORDER BY 1`, [c.id]);
+  const off = await one(`SELECT count(*)::int AS offerte, count(*) FILTER (WHERE status='scelta')::int AS scelte, count(*) FILTER (WHERE status='invitata')::int AS inviti FROM offers WHERE company_id=$1`, [c.id]);
+  const tot = months.reduce((s, m) => ({ visite: s.visite + m.visite, quotazioni: s.quotazioni + m.quotazioni }), { visite: 0, quotazioni: 0 });
+  res.json({ locked: !ok, totals: tot, offers: off, months: ok ? months : [] });
 });
 
 export default r;

@@ -58,7 +58,7 @@ auth.post('/password', requireAuth(), async (req, res) => {
   const u = await one('SELECT password_hash FROM users WHERE id=$1', [req.user.id]);
   if (!(await check(String(req.body?.old || ''), u.password_hash))) return res.status(400).json({ error: 'La password attuale non è corretta' });
   if (String(req.body?.password || '').length < 8) return res.status(400).json({ error: 'Almeno 8 caratteri' });
-  await q('UPDATE users SET password_hash=$1 WHERE id=$2', [await hash(req.body.password), req.user.id]);
+  await q('UPDATE users SET password_hash=$1, must_change_password=false WHERE id=$2', [await hash(req.body.password), req.user.id]);
   res.json({ ok: true });
 });
 

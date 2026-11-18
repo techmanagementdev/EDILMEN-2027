@@ -24,7 +24,7 @@ export async function loadUser(req, _res, next) {
   if (t) {
     try {
       const p = jwt.verify(t, SECRET);
-      const u = await one('SELECT id, email, name, phone, role, company_id, agency_id, active FROM users WHERE id=$1', [p.uid]);
+      const u = await one('SELECT id, email, name, phone, role, company_id, agency_id, active, org_role, must_change_password FROM users WHERE id=$1', [p.uid]);
       if (u && u.active) req.user = u;
     } catch { /* sessione non valida */ }
   }

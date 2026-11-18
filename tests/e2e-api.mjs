@@ -119,4 +119,47 @@ await imp2.post(`/api/impresa/opportunities/${o2.id}/respond`, { items: [{ n: 1,
 const cmp = (await ag.get(`/api/me/requests/${gc.id}`)).comparison;
 ok(cmp.offers.length === 2 && cmp.items[0].prices.length === 2, 'confronto voce per voce del computo');
 
-console.log('\nTUTTO OK');
+
+// ===== SaaS: piano, prova, gestionale =====
+const sub = await imp1.get('/api/impresa/subscription');
+ok(sub.plan.id === 'plus' && sub.plan.source === 'prova', 'impresa nuova in prova Plus');
+const cl1 = await imp1.post('/api/impresa/g/clients', { name: 'Cliente privato prova', phone: '000', comune: 'Trento' });
+const qd = await imp1.post('/api/impresa/g/quotes', { title: 'Bagno via Prova', client_id: cl1.id, items: [{ desc: 'Bagno chiavi in mano', unit: 'bagno', qty: 1, price: 8200 }, { desc: 'Spostamento scarico', unit: 'cad', qty: 1, price: 800 }], discount: 0.05, vat_rate: 0.1 });
+ok(qd.total === 8550, 'preventivo: (8200+800) −5% = 8.550 €');
+const snd = await imp1.post(`/api/impresa/g/quotes/${qd.id}/send`);
+const doc = await pub.get(`/api/public/preventivo/${snd.token}`);
+ok(doc.company_name.includes('Uno') && doc.client_name === 'Cliente privato prova', 'preventivo consultabile online con intestazione impresa');
+await pub.post(`/api/public/preventivo/${snd.token}/answer`, { accept: true, note: 'ok' });
+const job = await imp1.post(`/api/impresa/g/quotes/${qd.id}/to-job`);
+const fdl = new FormData(); fdl.append('text', 'Demolizioni fatte'); fdl.append('hours', '6'); fdl.append('photos', new Blob([png], { type: 'image/png' }), 'd.png');
+await imp1.form(`/api/impresa/g/jobs/${job.id}/logs`, fdl);
+const jd = await imp1.get(`/api/impresa/g/jobs/${job.id}`);
+ok(jd.job.status === 'in_corso' && jd.logs.length === 1 && jd.client.stage === 'cliente', 'cantiere avviato dal preventivo accettato, diario con foto');
+await imp1.post('/api/impresa/g/deadlines', { title: 'Acconto 30%', due: '2027-01-15', amount: 2565, job_id: job.id });
+const dash = await imp1.get('/api/impresa/g/dashboard');
+ok(dash.k.cantieri === 1 && dash.next.length === 1, 'cruscotto gestionale');
+const imported = await imp1.post(`/api/impresa/g/clients/from-offer/${best.id}`);
+ok(imported.name === 'TEST EMI', 'cliente della richiesta EdilMen importato con consenso');
+const team = await imp1.post('/api/impresa/team', { email: `collega${stamp}@test.local`, name: 'Collega' });
+ok(team.tempPassword, 'collega aggiunto al team');
+// fine prova → gestionale bloccato
+await admin.patch(`/api/admin/subscriptions/${c1.id}`, { action: 'fine_prova' });
+let blocked = false; try { await imp1.get('/api/impresa/g/dashboard'); } catch (e) { blocked = e.message.includes('402'); }
+ok(blocked, 'senza piano Plus il gestionale risponde 402 con invito all\'upgrade');
+await admin.post(`/api/admin/subscriptions/${c1.id}/payment`, { plan: 'plus', months: 12 });
+ok((await imp1.get('/api/impresa/subscription')).plan.source === 'abbonamento', 'pagamento registrato: Plus attivo 12 mesi');
+const subs = await admin.get('/api/admin/subscriptions');
+ok(subs.mrr >= 50, 'MRR in admin');
+// statistiche scheda
+const slug = (await admin.get(`/api/admin/companies/${c1.id}`)).company.slug;
+await pub.get(`/api/public/companies/${slug}`);
+const st = await imp1.get('/api/impresa/stats');
+ok(!st.locked && st.totals.visite >= 1 && st.totals.quotazioni >= 1, 'statistiche: visite alla scheda e comparse nel quotatore');
+// prezzi community
+for (const a of [9000, 9500, 10200]) await pub.post('/api/public/community-prices', { pkg: 'R03', amount: a, qty: 1, year: 2026, comune: 'Trento' });
+for (const x of await admin.get('/api/admin/community-prices')) await admin.patch(`/api/admin/community-prices/${x.id}`, { status: 'approvata' });
+const cp = await pub.get('/api/public/community-prices/R03');
+ok(cp.published && cp.median === 9500, 'mediana pubblica dei prezzi community da 3 quotazioni');
+
+console.log('\nTUTTO OK (SaaS incluso)');
+

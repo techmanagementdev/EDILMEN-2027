@@ -2,6 +2,7 @@
 import { many, one, q } from './db.js';
 import { computeQuote, km } from '../../shared/pricing.js';
 import { getCatalog, getSetting } from './data.js';
+import { can, trackView } from './saas.js';
 
 const DOCS = ['visura', 'durc', 'rc', 'patente'];
 
@@ -93,7 +94,8 @@ export async function matchRequest(reqRow, userId = null) {
   const withoutPrices = [];
   for (const c of list) {
     const ov = prices[c.id];
-    if (ov) {
+    const listinoOk = !M.listinoRequiresPlan || (await can(c, 'listino'));
+    if (ov && listinoOk) {
       const quote = computeQuote(cat, reqRow.spec, ov);
       if (!quote.missing.length && quote.lines.length) {
         await q(
@@ -102,6 +104,7 @@ export async function matchRequest(reqRow, userId = null) {
            ON CONFLICT (request_id, company_id) DO NOTHING`,
           [reqRow.id, c.id, quote.prudent.imponibile, JSON.stringify(quote)]);
         auto++;
+        trackView(c.id, 'in_quotes').catch(() => {});
         continue;
       }
     }
