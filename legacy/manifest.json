@@ -1,6 +1,6 @@
 {
  "origin": "https://www.edilmen.it",
- "copiedAt": "2026-11-18T10:28:31.730Z",
+ "copiedAt": "2026-11-19T00:40:31.778Z",
  "files": [
   {
    "path": "/",
@@ -414,6 +414,11 @@
   },
   {
    "path": "/css/imprese.css",
+   "status": 200,
+   "type": "text/css"
+  },
+  {
+   "path": "/css/preventivo.css",
    "status": 200,
    "type": "text/css"
   },
@@ -18118,6 +18123,11 @@
    "type": "application/javascript"
   },
   {
+   "path": "/js/flusso.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
    "path": "/js/gestionale.js",
    "status": 200,
    "type": "application/javascript"
@@ -18153,12 +18163,27 @@
    "type": "application/javascript"
   },
   {
+   "path": "/js/preventivo.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
    "path": "/js/prezzi.js",
    "status": 200,
    "type": "application/javascript"
   },
   {
    "path": "/js/territorio.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "path": "/js/testi.js",
+   "status": 200,
+   "type": "application/javascript"
+  },
+  {
+   "path": "/js/vocale.js",
    "status": 200,
    "type": "application/javascript"
   },
@@ -24556,6 +24581,16 @@
    "path": "/termini",
    "status": 200,
    "type": "text/html"
+  },
+  {
+   "path": "/video/cantiere-al-contrario-mobile.mp4",
+   "status": 200,
+   "type": "video/mp4"
+  },
+  {
+   "path": "/video/cantiere-al-contrario.mp4",
+   "status": 200,
+   "type": "video/mp4"
   },
   {
    "path": "/website",

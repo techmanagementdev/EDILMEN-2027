@@ -1,0 +1,170 @@
+/* Quotazione istantanea: stili aggiuntivi. Si carica solo quando parte la quotazione.
+   Le classi comuni (.wz, .tabs2, .cal, .imp, .range3, .tiers...) sono già in index.html. */
+.pv-top{position:sticky;top:66px;z-index:5;background:var(--surface);padding:10px 0 12px;margin-top:-10px}
+.pv-riga{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;font-size:.92rem}
+.pv-riga>span:first-child{color:var(--muted);font-weight:600}
+.pv-stima{background:var(--blue-soft);color:var(--blue);border-radius:999px;padding:6px 12px;font-variant-numeric:tabular-nums}
+.pv-stima small{font-weight:600;color:var(--ink2);font-size:.8rem}
+.pv-corpo{padding-bottom:20px}
+.pv-corpo h1:focus{outline:none}
+
+/* risposte grandi, una sotto l'altra: facili da toccare con il pollice */
+.pv-opts{display:grid;gap:10px;margin-top:22px}
+.pv-opt{position:relative;display:block;width:100%;min-height:60px;text-align:left;padding:16px 48px 16px 18px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--surface);font:inherit;color:inherit;cursor:pointer;transition:border-color .12s,background .12s}
+.pv-opt:hover{border-color:var(--blue-line)}
+.pv-opt.on{border-color:var(--blue);background:var(--blue-soft)}
+.pv-opt .t{display:block;font-weight:700;font-size:1.05rem}
+.pv-opt .d{display:block;font-size:.9rem;color:var(--muted);margin-top:2px}
+.pv-opt .chk{position:absolute;top:50%;right:16px;transform:translateY(-50%);width:24px;height:24px;border-radius:7px;border:1.5px solid var(--line2);display:grid;place-items:center;color:#fff;font-size:.8rem}
+.pv-opt.on .chk{background:var(--blue);border-color:var(--blue)}
+.pv-opts[role=radiogroup] .pv-opt::after{content:"";position:absolute;top:50%;right:16px;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line2)}
+.pv-opts[role=radiogroup] .pv-opt.on::after{border:7px solid var(--blue)}
+@media (min-width:640px){.pv-multi,.pv-reg{grid-template-columns:1fr 1fr}}
+
+.pv-nonso{display:block;width:100%;min-height:52px;margin-top:14px;border:1.5px dashed var(--line2);border-radius:var(--r);background:transparent;color:var(--ink2);font:inherit;font-weight:600;cursor:pointer}
+.pv-nonso:hover{border-color:var(--blue);color:var(--blue)}
+
+/* numeri */
+.pv-num{display:flex;align-items:center;gap:10px;margin-top:24px}
+.pv-num input{flex:1;min-width:0;height:60px;font-size:1.6rem;font-weight:700;text-align:center;border:1.5px solid var(--line2);border-radius:var(--r);font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.pv-num input::-webkit-inner-spin-button,.pv-num input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.pv-num .u{font-weight:700;color:var(--muted);min-width:2.5em}
+.pv-step{width:60px;height:60px;flex:none;border:1.5px solid var(--line2);border-radius:var(--r);background:var(--surface);font-size:1.6rem;font-weight:700;color:var(--blue);cursor:pointer}
+.pv-step:hover{border-color:var(--blue)}
+input[type=range]#pv-num{width:100%;margin-top:28px;accent-color:var(--blue);height:44px}
+.pv-out{display:block;text-align:center;font-size:1.6rem;font-weight:800;color:var(--blue);margin-top:6px}
+
+.pv-lbl{display:block;font-weight:700;font-size:.95rem;margin:22px 0 8px}
+.pv-in{width:100%;height:56px;padding:0 16px;font:inherit;font-size:1.05rem;border:1.5px solid var(--line2);border-radius:var(--r)}
+.pv-nota{background:var(--bg);border-radius:var(--r-sm);padding:12px 14px;font-size:.92rem;color:var(--ink2);margin-top:14px}
+
+.pv-ipotesi{background:#FFF8EC;border:1px solid #F3D9A8;border-radius:var(--r);padding:14px 16px;margin-top:16px;font-size:.93rem}
+.pv-ipotesi ul{margin:6px 0 6px 18px}
+
+.pv-incl{margin-top:18px;border:1px solid var(--line);border-radius:var(--r-lg);padding:4px 16px}
+.pv-incl summary{cursor:pointer;font-weight:700;padding:12px 0;min-height:44px}
+.pv-incl h3{font-size:1rem;margin:14px 0 8px}
+.pv-comp{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:10px 12px;margin-bottom:8px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);font:inherit;color:inherit;cursor:pointer;min-height:44px}
+.pv-comp.on{background:var(--blue-soft);border-color:var(--blue-line)}
+.pv-comp .bx{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line2);display:grid;place-items:center;color:#fff;font-size:.75rem}
+.pv-comp.on .bx{background:var(--blue);border-color:var(--blue)}
+.pv-comp b{display:block;font-weight:600;font-size:.93rem}.pv-comp small{display:block;color:var(--muted);font-size:.82rem}
+
+.pv-consensi{border:0;padding:0;margin:24px 0 0}
+.pv-consensi legend{font-weight:700;margin-bottom:8px}
+.pv-check{display:flex;gap:12px;align-items:flex-start;padding:10px 0;font-size:.9rem;color:var(--ink2);cursor:pointer}
+.pv-check input{width:24px;height:24px;flex:none;margin-top:1px;accent-color:var(--blue)}
+.pv-check em{font-style:normal;color:var(--muted)}
+.pv-errore{background:var(--red-soft);color:var(--red);border-radius:var(--r-sm);padding:12px 14px;margin-top:14px;font-weight:600}
+.pv-trappola{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+
+.pv-piede .in{align-items:center}
+.pv-piede .btn{min-height:48px}
+.pv-piede .btn[aria-disabled=true]{opacity:.5}
+.pv-link{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;min-height:44px;padding:0 6px}
+.pv-fine{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.pv-carica{padding:60px 0;text-align:center;color:var(--muted)}
+@media (max-width:520px){.pv-link{font-size:.85rem}.pv-piede .btn{padding-inline:14px}}
+
+/* vocale */
+.vc-invito{display:block;width:100%;margin-top:12px;background:none;border:0;color:var(--blue);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;min-height:44px}
+.vc-grande{display:flex;width:100%;min-height:56px;margin-top:20px;font-size:1.05rem}
+.vc-centro{text-align:center;margin-top:8px}
+.vc-sez{margin-top:22px;background:var(--bg);border-radius:var(--r-lg);padding:22px 18px}
+.vc-rec{display:flex;align-items:center;gap:18px}
+.vc-mic{width:84px;height:84px;flex:none;border-radius:50%;border:0;background:var(--orange);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 22px rgba(255,106,43,.35)}
+.vc-mic:hover{background:var(--orange-d)}
+.vc-mic.on{background:var(--red);animation:vcPulse 1.4s ease-out infinite}
+.vc-quad{width:26px;height:26px;border-radius:5px;background:#fff}
+@keyframes vcPulse{0%{box-shadow:0 0 0 0 rgba(180,35,24,.45)}70%{box-shadow:0 0 0 18px rgba(180,35,24,0)}100%{box-shadow:0 0 0 0 rgba(180,35,24,0)}}
+@media (prefers-reduced-motion:reduce){.vc-mic.on{animation:none}}
+.vc-stato{display:grid;gap:2px}.vc-stato b{font-size:1.05rem}.vc-stato span{color:var(--muted);font-variant-numeric:tabular-nums}
+.vc-oppure{text-align:center;color:var(--muted);margin:16px 0 10px;font-size:.9rem}
+.vc-file{display:flex;width:100%;min-height:52px;cursor:pointer}
+.vc-nascosto{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.vc-file:focus-within{outline:3px solid var(--blue);outline-offset:2px}
+.vc-pronto audio{width:100%;margin-top:10px}
+.vc-riga{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.vc-area{height:auto;min-height:96px;padding:12px 16px;resize:vertical}
+.vc-foto{margin:8px 0 0 18px;font-size:.9rem}
+.vc-extra .fld label{margin-top:10px}
+
+/* Emoji sulle risposte, scelte rapide e Conferma dentro la schermata (avanzamento automatico, 08/10/2026) */
+.pv-opt .emo{float:left;font-size:1.5rem;line-height:1;margin:2px 12px 0 0}
+.pv-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.pv-chip{min-height:48px;padding:0 18px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--surface);font:inherit;font-weight:700;color:inherit;cursor:pointer;font-variant-numeric:tabular-nums}
+.pv-chip:hover{border-color:var(--blue-line)}
+.pv-chip.on{border-color:var(--blue);background:var(--blue-soft)}
+.pv-conferma{display:block;width:100%;min-height:52px;margin-top:16px}
+.pv-conferma[aria-disabled=true]{opacity:.5}
+.pv-reg{margin-top:16px}
+
+/* Feedback del cliente (08/10/2026): riepilogo, voci comprese, prenotazione in una schermata, contatto con un solo campo */
+.pv-riep{border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:18px;background:var(--surface)}
+.pv-riep h2{font-size:1.05rem;margin:0 0 8px}
+.pv-riep ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.pv-riep li{display:flex;gap:8px;align-items:baseline;font-size:.95rem;color:var(--ink2)}
+.pv-riep li:first-child{font-weight:700;color:var(--ink)}
+.pv-riep .ok,.pv-voci .ok{color:#16a34a;font-weight:800;flex:none}
+.pv-riep .srv{padding-left:2px}
+.pv-voci{list-style:none;margin:4px 0 8px;padding:0;display:grid;gap:10px}
+.pv-voci li{display:flex;gap:10px;align-items:flex-start}
+.pv-voci b{display:block;font-weight:600;font-size:.95rem}.pv-voci small{display:block;color:var(--muted);font-size:.84rem}
+.pv-incl .small{margin-bottom:12px}
+.pv-modi{margin-top:12px}
+.pv-modi button{padding:10px}
+.pv-modi .emo{font-size:1.3rem;margin:0}
+.pv .card .cal button{aspect-ratio:auto;height:42px}
+.pv .card{padding:14px;margin-top:12px}
+.slots button:disabled{opacity:.35;cursor:default}
+.pv-nota-g{margin-top:10px}
+.tabs3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:520px){.tabs3 button{padding:10px 6px}.tabs3 button small{display:none}}
+.pv-privacy{margin-top:22px;font-size:.88rem;color:var(--muted);display:grid;gap:6px}
+.pv-privacy a{color:var(--blue)}
+.pv-privacy .pv-check{padding:6px 0;font-size:.9rem}
+
+/* Numeri (09/10/2026): contatore compatto al centro e barra da trascinare per le superfici */
+.pv-num{justify-content:center;gap:14px;width:fit-content;margin:26px auto 0;padding:8px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);box-shadow:0 12px 30px -22px rgba(16,32,74,.45)}
+.pv-num:focus-within{border-color:var(--blue)}
+.pv-step{width:52px;height:52px;border:0;border-radius:50%;background:var(--blue-soft);font-size:1.6rem;line-height:1}
+.pv-step:hover{background:var(--blue);color:#fff}
+.pv-val{display:flex;align-items:baseline;justify-content:center;gap:6px;min-width:110px}
+.wz .pv-num input{flex:none;height:52px;min-height:0;padding:0;border:0;border-radius:0;background:transparent;font-size:2rem;font-weight:800;text-align:center;color:var(--notte,#10204A);box-sizing:content-box}
+.wz .pv-num input:focus{outline:none;box-shadow:none}
+.pv-num .u{min-width:0;font-size:1.05rem}
+.pv-barra{-webkit-appearance:none;appearance:none;display:block;width:100%;height:8px;margin:30px 0 0;border-radius:999px;cursor:pointer;background:linear-gradient(90deg,var(--blue) var(--p,50%),var(--blue-soft) var(--p,50%))}
+.pv-barra:focus-visible{outline:3px solid var(--blue-line,#9DB4FF);outline-offset:6px}
+.pv-barra::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 4px 12px rgba(20,71,230,.35)}
+.pv-barra::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 4px 12px rgba(20,71,230,.35)}
+.pv-barra-l{display:flex;justify-content:space-between;margin-top:10px;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pv-centro{justify-content:center;text-align:center}
+.pv-lbl.pv-centro{margin-top:26px;color:var(--muted);font-weight:600}
+.pv-lbl.pv-centro+.pv-num{margin-top:10px}
+
+/* Frecce avanti e indietro ai lati della quotazione (09/10/2026); sul telefono stanno nella barra in basso */
+.pv-freccia{position:fixed;top:50%;z-index:31;width:56px;height:56px;margin-top:-28px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--blue);display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 30px -18px rgba(16,32,74,.5);transition:background .15s,color .15s,opacity .15s}
+.pv-freccia:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pv-freccia[aria-disabled=true]{opacity:.35;cursor:default}
+.pv-freccia[aria-disabled=true]:hover{background:var(--surface);color:var(--blue);border-color:var(--line)}
+.pv-freccia.sx{left:calc(50% - 350px - 90px)}
+.pv-freccia.dx{right:calc(50% - 350px - 90px)}
+@media (min-width:901px){.pv-indietro{visibility:hidden}}
+@media (max-width:900px){.pv-freccia{top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));margin-top:0;width:48px;height:48px}
+  .pv-freccia.sx{left:20px}.pv-freccia.dx{right:20px}.pv-indietro{visibility:hidden}}
+@media (max-width:900px){.pv-con-avanti .pv-freccia.dx{display:none}}
+/* attesa prima delle offerte: nuvola che gira, barra che si riempie, conto alla rovescia */
+.pv-attesa{max-width:520px;margin:0 auto;padding:48px 20px 60px;text-align:center}
+.pa-nuvola{width:120px;height:120px;margin:0 auto 22px;border-radius:50%;display:grid;place-items:center;background:#EEF3FF;animation:pa-pulsa 1.2s ease-in-out infinite}
+.pa-nuvola svg{width:68px;height:47px;fill:#1447E6;animation:pa-gira 1.6s cubic-bezier(.6,.1,.4,.9) infinite}
+@keyframes pa-gira{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(.85)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes pa-pulsa{0%,100%{box-shadow:0 0 0 0 rgba(20,71,230,.25)}50%{box-shadow:0 0 0 18px rgba(20,71,230,0)}}
+.pv-attesa h1{font-family:Newsreader,serif;font-weight:600;font-size:1.7rem;line-height:1.15;margin:0 0 18px;color:#10204A}
+.pa-barra{height:12px;border-radius:999px;background:#E6EBF7;overflow:hidden}
+.pa-barra i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#1447E6,#FF6A2B)}
+.pa-conto{margin:10px 0 18px;font-weight:700;color:#10204A;font-variant-numeric:tabular-nums}
+.pa-passi{list-style:none;padding:0;margin:0 auto;display:grid;gap:10px;text-align:left;max-width:380px}
+.pa-passi li{display:flex;gap:10px;align-items:center;color:#8A96B5;transition:color .3s}
+.pa-passi li .ok{display:grid;place-items:center;width:24px;height:24px;flex:none;border-radius:50%;background:#E6EBF7;color:transparent;font-size:14px;font-weight:900;transition:background .3s,color .3s}
+.pa-passi li.on{color:#10204A}.pa-passi li.on .ok{background:#1D7F48;color:#fff}
+@media (prefers-reduced-motion:reduce){.pa-nuvola,.pa-nuvola svg{animation:none}}
