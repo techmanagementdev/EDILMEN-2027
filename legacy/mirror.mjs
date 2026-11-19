@@ -6,7 +6,7 @@ import path from 'node:path';
 const ORIGIN = 'https://www.edilmen.it';
 const OUT = path.resolve('legacy/site');
 const MAX = Number(process.env.MAX_FILES || 8000);
-const seeds = ['/', '/index.html', '/app.html', '/admin', '/admin.html', '/aziende.html', '/rivendica.html', '/blog.html', '/sitemap.xml', '/robots.txt', '/site.webmanifest', '/favicon.ico', '/favicon.svg', '/favicon-32x32.png', '/favicon-16x16.png', '/apple-touch-icon.png', '/imprese/vetrina.json', '/404.html'];
+const seeds = ['/', '/index.html', '/app.html', '/admin', '/admin.html', '/aziende.html', '/rivendica.html', '/blog.html', '/sitemap.xml', '/robots.txt', '/site.webmanifest', '/favicon.ico', '/favicon.svg', '/favicon-32x32.png', '/favicon-16x16.png', '/apple-touch-icon.png', '/imprese/vetrina.json', '/404.html', '/js/preventivo.js', '/js/flusso.js', '/js/testi.js', '/js/vocale.js', '/css/preventivo.css', '/css/imprese.css', '/audio/spot-edilmen.mp3', '/video/cantiere-al-contrario.mp4', '/video/cantiere-al-contrario-mobile.mp4', '/img/home-squadra.webp', '/img/mascotte.jpg', '/img/operaio.jpg'];
 const TEXT = /html|css|javascript|json|xml|text\/|manifest|svg/;
 const seen = new Set();
 const queue = [...seeds];
@@ -38,6 +38,9 @@ function links(body, base) {
     if (m[2]) { m[2].split(',').forEach((s) => out.push(clean(s, base))); continue; }
     out.push(clean(m[1] || m[3] || m[4] || m[5] || m[6] || m[7], base));
   }
+  // percorsi relativi caricati dagli script (es. 'js/preventivo.js'): sono relativi alla radice del sito
+  const rel = /["'`]((?:js|css|img|audio|video|fonts|data|foto)\/[A-Za-z0-9_\-./]+\.(?:js|mjs|css|json|webp|jpe?g|png|gif|svg|mp4|webm|mp3|pdf|woff2?))["'`]/g;
+  while ((m = rel.exec(body))) out.push(clean('/' + m[1], '/'));
   return out.filter(Boolean);
 }
 
