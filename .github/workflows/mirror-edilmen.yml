@@ -1,12 +1,18 @@
 name: Copia edilmen.it
 on:
   workflow_dispatch:
+    inputs:
+      conferma:
+        description: "ATTENZIONE: sovrascrive legacy/site e cancella le modifiche fatte sulla copia (es. correzioni del quotatore del 19/11/2026). Scrivi SOVRASCRIVI per procedere."
+        required: true
+        default: "no"
 permissions:
   contents: write
 jobs:
   copia:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    if: ${{ github.event.inputs.conferma == 'SOVRASCRIVI' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

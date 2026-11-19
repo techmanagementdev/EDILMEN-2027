@@ -54,7 +54,7 @@ const SPECIFICHE = [
   // Pavimenti (anche nella ristrutturazione completa)
   dett('pavMateriale', S => fa(S, 'pavimenti') || S.intervento === 'completa', ['gres', 'parquet'], 'gres'),
   // Infissi e finestre
-  dett('infMateriale', S => fa(S, 'infissi') || effHa(S, 'finestre') || S.intervento === 'completa', ['pvc', 'alluminio', 'legnoalluminio'], 'pvc'),
+  dett('infMateriale', S => fa(S, 'infissi') || effHa(S, 'finestre') || (S.intervento === 'completa' && S.comp.cpl_infissi !== false), ['pvc', 'alluminio', 'legnoalluminio'], 'pvc'),
   // Impianto elettrico
   dett('elContatore', S => fa(S, 'elettrico'), ['no', 'si'], 'no'),
   // Impianto idraulico
@@ -91,7 +91,7 @@ const DOMANDE = [
   { id: 'stanze', tipo: 'numero', campo: 'cucine', min: 1, max: 200, se: S => S.intervento === 'completa' && S.immobile === 'condo',
     predefinito: S => Math.max(2, Math.round(S.mq / 70)), nonSo: S => { S.cucine = Math.max(2, Math.round(S.mq / 70)); } },
   { id: 'livello', tipo: 'scelta', campo: 'livello', opzioni: () => [0, 1, 2],
-    se: S => S.intervento === 'completa' || (S.intervento === 'parziale' && S.ambienti.some(a => ['bagno', 'cucina', 'pavimenti', 'infissi', 'tinteggiatura'].includes(a))),
+    se: S => S.intervento === 'completa' || (S.intervento === 'nuova' && S.nuovaTipo !== 'luxury') || (S.intervento === 'parziale' && S.ambienti.some(a => ['bagno', 'cucina', 'pavimenti', 'infissi', 'tinteggiatura'].includes(a))),
     nonSo: S => { S.livello = 1; } },
   // Ristrutturazione parziale: una quantità per ogni lavoro scelto
   ...['bagno', 'cucina', 'pavimenti', 'infissi', 'elettrico', 'idraulico', 'tinteggiatura'].map(a => ({
@@ -102,9 +102,6 @@ const DOMANDE = [
   })),
   { id: 'soffittiAlti', tipo: 'scelta', campo: 'soffittiAlti', opzioni: () => [true, false],
     se: S => S.intervento === 'parziale' && S.ambienti.includes('tinteggiatura'), nonSo: S => { S.soffittiAlti = false; } },
-  // Domande specifiche del lavoro scelto (dal 19/10/2026): le risposte con una variante del listino cambiano il prezzo,
-  // le altre sono informazioni per il referente e l'impresa (il prezzo prudente comprende già l'accantonamento per gli imprevisti)
-  ...SPECIFICHE,
   // Nuova costruzione
   { id: 'nUnita', tipo: 'numero', campo: 'nUnita', min: 2, max: 500, se: S => S.intervento === 'nuova' && S.nuovaTipo === 'condo',
     predefinito: S => Math.max(2, Math.round(S.mq / 80)), nonSo: S => { S.nUnita = Math.max(2, Math.round(S.mq / 80)); } },
@@ -127,10 +124,21 @@ const DOMANDE = [
     se: S => S.intervento === 'eff' && S.eff.includes('fv'), nonSo: S => { S.bolletta = 150; } },
   { id: 'accumulo', tipo: 'scelta', campo: 'accumulo', opzioni: () => [true, false],
     se: S => S.intervento === 'eff' && S.eff.includes('fv'), nonSo: S => { S.accumulo = false; } },
+  // Ristrutturazione completa (19/11/2026): finestre e pompa di calore entravano sempre nel prezzo senza chiederlo
+  { id: 'cplFinestre', tipo: 'scelta', campo: 'comp.cpl_infissi', opzioni: () => [true, false],
+    se: S => S.intervento === 'completa', nonSo: S => { S.comp.cpl_infissi = true; } },
+  { id: 'cplPdc', tipo: 'scelta', campo: 'comp.cpl_riscaldamento', opzioni: () => [true, false],
+    se: S => S.intervento === 'completa', nonSo: S => { S.comp.cpl_riscaldamento = true; } },
+  // Domande specifiche del lavoro scelto (dal 19/10/2026): le risposte con una variante del listino cambiano il prezzo,
+  // le altre sono informazioni per il referente e l'impresa (il prezzo prudente comprende già l'accantonamento per gli imprevisti)
+  ...SPECIFICHE,
   // Per tutti
   { id: 'part', tipo: 'multi', campo: 'part', minimo: 0, nonSo: S => { S.part = []; },
-    opzioni: S => C.PART.map(p => p[0]).filter(p => p !== 'soffittialti' || S.intervento === 'completa') },
-  { id: 'tecnico', tipo: 'scelta', campo: 'tecnico', opzioni: () => ['permessi', 'aiuto'], nonSo: S => { S.tecnico = 'aiuto'; }, se: serveTecnico },
+    opzioni: S => C.PART.map(p => p[0]).filter(p =>
+      (p !== 'soffittialti' || S.intervento === 'completa') &&
+      (p !== 'noasc' || (S.intervento !== 'nuova' && S.immobile !== 'casa')) &&
+      (p !== 'abitata' || S.intervento !== 'nuova')) },
+  { id: 'tecnico', tipo: 'scelta', campo: 'tecnico', opzioni: () => ['tutto', 'permessi', 'aiuto'], nonSo: S => { S.tecnico = 'aiuto'; }, se: serveTecnico },
   { id: 'incentivi', tipo: 'scelta', campo: 'incentivi', opzioni: () => ['si', 'no'], nonSo: S => { S.incentivi = 'si'; } },
 ];
 const PER_ID = Object.fromEntries(DOMANDE.map(d => [d.id, d]));
@@ -169,8 +177,8 @@ function primaNonSo(S) {
   return ['intervento', 'ambienti'].find(id => nonSo(S, id)) || 'intervento';
 }
 
-function leggi(S, campo) { return campo.startsWith('q.') ? S.q[campo.slice(2)] : campo.startsWith('dett.') ? S.dett[campo.slice(5)] : S[campo]; }
-function scrivi(S, campo, v) { if (campo.startsWith('q.')) S.q[campo.slice(2)] = v; else if (campo.startsWith('dett.')) S.dett[campo.slice(5)] = v; else S[campo] = v; }
+function leggi(S, campo) { return campo.startsWith('q.') ? S.q[campo.slice(2)] : campo.startsWith('dett.') ? S.dett[campo.slice(5)] : campo.startsWith('comp.') ? S.comp[campo.slice(5)] : S[campo]; }
+function scrivi(S, campo, v) { if (campo.startsWith('q.')) S.q[campo.slice(2)] = v; else if (campo.startsWith('dett.')) S.dett[campo.slice(5)] = v; else if (campo.startsWith('comp.')) S.comp[campo.slice(5)] = v; else S[campo] = v; }
 
 /* Risponde a una domanda. Restituisce l'id della schermata successiva. */
 function rispondi(S, id, valore) {
@@ -194,7 +202,11 @@ function rispondi(S, id, valore) {
   }
   // Finché la superficie non è stata chiesta, la stima usa quella tipica per l'immobile scelto
   if (S.risposte.mq === undefined && ['intervento', 'immobile', 'nuovaTipo'].includes(id)) S.mq = mqTipici(S);
-  if (id === 'immobile' && S.intervento === 'eff') S.eff = S.eff.filter(e => kitDisponibile(S).includes(e));
+  if (id === 'immobile' && S.intervento === 'eff') {
+    S.eff = S.eff.filter(e => kitDisponibile(S).includes(e));
+    // il lavoro scelto in home non si fa su questo immobile (es. tetto in appartamento): si chiedono gli interventi possibili
+    if (!S.eff.length) { S.kitFisso = false; S.eff = kitDisponibile(S); }
+  }
   return avanti(S);
 }
 

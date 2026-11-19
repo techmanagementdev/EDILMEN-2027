@@ -152,7 +152,7 @@ function inclusi() {
 function schermoQuotazioni() {
   const Q = T.quotazioni, f = C.forchetta(S), off = C.offerte(S);
   const lux = S.intervento === 'nuova' && S.nuovaTipo === 'luxury';
-  const tiers = S.intervento === 'completa' || lux
+  const tiers = lux || F.domande(S).includes('livello')
     ? `<p class="pv-lbl">${esc(Q.finiture)}</p><div class="tiers">${(lux ? C.LUX_LIVELLI : C.LIVELLI).map((l, i) => { const k = lux ? 'finLuxury' : 'livello'; return `<button type="button" class="tier${S[k] === i ? ' on' : ''}" aria-pressed="${S[k] === i}" data-tier="${k}:${i}"><b>${esc(l)}</b></button>`; }).join('')}</div>` : '';
   return recap() + testa(esc(Q.titolo), '') + boxIpotesi() + tiers +
     `<div class="range3" aria-live="polite"><div class="lo"><small>${esc(Q.basso)}</small><b>${eur(f.min)}</b></div><div class="mid"><small>${esc(Q.media)}</small><b>${eur(f.media)}</b></div><div class="hi"><small>${esc(Q.alto)}</small><b>${eur(f.max)}</b></div></div>
