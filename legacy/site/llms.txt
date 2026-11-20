@@ -1,0 +1,28 @@
+# EdilMen
+
+> Rete di imprese edili verificate con rating, in Trentino-Alto Adige, Veneto e Friuli-Venezia Giulia. Calcola il prezzo dei lavori edili e coordina l'impresa fino alla fine del cantiere, con pagamento a stato avanzamento lavori. Servizio gratuito per i privati: EdilMen è pagata dall'impresa solo sui lavori confermati.
+
+EdilMen è un servizio di European Management Institute S.r.l., Via dei Solteri 74, 38121 Trento (P.IVA 02604960225).
+
+## Due modi per chiedere un preventivo
+
+- **Quotazione digitale (prezzo subito)**: per ristrutturazione completa, rifacimento bagno e nuova costruzione. Il cliente risponde a qualche domanda e vede il prezzo del pacchetto nella sua zona, calcolato dal listino EdilMen. Il prezzo è prudente: al sopralluogo può solo scendere.
+- **Vecchia scuola**: per tutti gli altri lavori (cucina, tetto, impianti, fotovoltaico, pompa di calore, singole stanze) e per chi preferisce raccontare. Il cliente scrive o registra un vocale, aggiunge le foto e lascia un contatto: un referente lo richiama con una quotazione su misura.
+
+## Pacchetti con prezzo subito (prezzi di partenza, livello standard, IVA esclusa)
+
+- Ristrutturazione completa chiavi in mano: da 429 €/m² (demolizioni, impianti nuovi, massetti, pavimenti, rivestimenti, porte, pitture).
+- Rinnovo completo senza rifare gli impianti: da 139 €/m².
+- Rifacimento bagno chiavi in mano: da 7.130 € a bagno.
+- Nuova costruzione in classe A chiavi in mano: da 1.718 €/m².
+
+Ogni pacchetto ha un capitolato con le voci comprese, quelle a misura (solo se servono) e quelle escluse. Pagamento a stato avanzamento lavori: 10% firma, 30% avvio, 30% metà opere, 20% fine opere, 10% collaudo.
+
+## Pagine utili
+
+- [Calcola il prezzo](https://www.edilmen.it/#preventivo)
+- [Prezzi dei lavori edili](https://www.edilmen.it/prezzi/)
+- [Elenco imprese con rating](https://www.edilmen.it/imprese)
+- [Come calcoliamo il rating](https://www.edilmen.it/rating)
+- [Per le imprese](https://www.edilmen.it/aziende)
+- [Guide e risorse](https://www.edilmen.it/blog.html)

@@ -1,6 +1,7 @@
 // Server della copia identica di edilmen.it: serve i file copiati così come sono.
 // Le chiamate /api/* (funzioni del sito attuale) vengono girate al sito originale finché non le riscriviamo qui.
 import express from 'express';
+import compression from 'compression';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +11,7 @@ const SITE = path.join(here, 'site');
 const ORIGIN = process.env.LEGACY_ORIGIN || 'https://www.edilmen.it';
 const app = express();
 app.disable('x-powered-by');
+app.use(compression());
 
 // Redirect registrati durante la copia
 const redirects = new Map();
@@ -39,7 +41,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(SITE, { extensions: ['html'], index: 'index.html', redirect: false }));
+// cache: pagine sempre fresche; immagini, font, video e librerie per 7 giorni
+app.use(express.static(SITE, { extensions: ['html'], index: 'index.html', redirect: false,
+  setHeaders: (res, file) => { res.setHeader('Cache-Control', /\.(html)$/.test(file) ? 'no-cache' : /[\/](img|fonts|video|vendor)[\/]/.test(file) ? 'public, max-age=604800' : 'public, max-age=3600'); } }));
 
 // /percorso -> /percorso/index.html
 app.use((req, res, next) => {
