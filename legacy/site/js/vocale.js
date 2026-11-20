@@ -1,4 +1,8 @@
-/* Percorso 3: quotazione su misura con un vocale. Si carica solo quando serve.
+/* Vecchia scuola (20/11/2026; prima "Raccontacelo a voce"): il cliente scrive due righe O registra un vocale, aggiunge le foto,
+   e un referente gli prepara la quotazione su misura. Vale per tutti i lavori, anche quelli che hanno il prezzo subito.
+   Con il vocale: come prima. Solo testo: le foto passano dallo stesso archivio privato se il servizio lo accetta,
+   altrimenti la richiesta parte da /api/lead con la descrizione e la nota delle foto da chiedere.
+   Percorso originale: quotazione su misura con un vocale. Si carica solo quando serve.
    Registra dal browser (MediaRecorder) o carica un file, poi: /api/vocale prepara i link monouso,
    il browser carica i file direttamente nell'archivio privato, /api/vocale invia crea la richiesta prioritaria. */
 (function () {
@@ -10,7 +14,7 @@ const MAX_S = 180, MAX_BYTE = 10 * 1024 * 1024, MAX_FOTO = 5;
 const TIPI_AUDIO = ['audio/webm', 'audio/ogg', 'audio/mpeg', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/wav', 'audio/x-wav'];
 
 let box, D, rec = null, flusso = null, timer = null, invio = false;
-const nuovo = o => ({ audio: null, durata: null, url: null, regione: o.regione || null, comune: o.comune || '', testo: '', foto: [],
+const nuovo = o => ({ audio: null, durata: null, url: null, regione: o.regione || null, comune: o.comune || '', testo: '', foto: [], tipo: o.tipo || null,
   canale: null, nome: '', cognome: '', tel: '', mail: '', consensi: { privacy: false, condivisione_imprese: false, marketing: false }, origine: o.origine || 'sito',
   errore: '', fatto: null });
 
@@ -98,17 +102,20 @@ function disegna() {
   }
   const L = T.domande.luogo;
   box.innerHTML = `<div class="pv vc"><div class="pv-corpo">
+    <div class="pv-modi" role="group" aria-label="Modalità di richiesta"><button type="button" class="pv-modo" data-az="digitale"><span class="emo" aria-hidden="true">${V.modoDigitale[0]}</span><span><b>${esc(V.modoDigitale[1])}</b><small>${esc(V.modoDigitale[2])}</small></span></button><button type="button" class="pv-modo on" aria-current="true"><span class="emo" aria-hidden="true">${V.modoVecchia[0]}</span><span><b>${esc(V.modoVecchia[1])}</b><small>${esc(V.modoVecchia[2])}</small></span></button></div>
     <h1 id="pv-h" tabindex="-1">${esc(V.titolo)}</h1><p class="sub">${esc(V.sotto)} <b>${esc(V.promessa.oggi)}</b></p>
-    <section class="vc-sez" aria-label="Vocale">${sezioneAudio()}</section>
+    <h2 class="wz-h2">${esc(V.tipoTitolo)}</h2>
+    <div class="pv-chips vc-tipi" role="radiogroup" aria-label="${esc(V.tipoTitolo)}">${Object.entries(V.tipi).map(([k, n]) => `<button type="button" role="radio" aria-checked="${D.tipo === k}" class="pv-chip${D.tipo === k ? ' on' : ''}" data-tipo="${k}">${esc(n)}</button>`).join('')}</div>
+    <h2 class="wz-h2">${esc(V.comeTitolo)}</h2>
+    ${campo('vc-testo', esc(V.testoGrande), `<textarea id="vc-testo" class="pv-in vc-area" data-bind="testo" maxlength="2000" rows="5" placeholder="${esc(V.testoEsempio)}">${esc(D.testo)}</textarea>`)}
+    <p class="vc-oppure">${esc(V.oppure)}</p>
+    <section class="vc-sez" aria-label="${esc(V.parla)}">${sezioneAudio()}</section>
+    <div class="fld"><label for="vc-foto">${esc(V.foto)}</label><input type="file" id="vc-foto" accept="image/*" multiple data-file="foto"><p class="small">${esc(V.fotoNota)}</p>
+      ${D.foto.length ? `<ul class="vc-foto">${D.foto.map((f, i) => `<li>${esc(f.name)} <button type="button" class="pv-link" data-togli-foto="${i}">${esc(V.togli)}</button></li>`).join('')}</ul>` : ''}</div>
     <h2 class="wz-h2">${esc(V.dove)}</h2>
     <div class="pv-opts pv-reg" role="radiogroup" aria-label="${esc(V.dove)}">${Object.entries(L.regioni).map(([k, n]) =>
       `<button type="button" role="radio" aria-checked="${D.regione === k}" class="pv-opt${D.regione === k ? ' on' : ''}" data-reg="${k}"><span class="t">${esc(n)}</span></button>`).join('')}</div>
     ${campo('vc-comune', esc(L.comune), `<input type="text" id="vc-comune" class="pv-in" data-bind="comune" value="${esc(D.comune)}" placeholder="${esc(L.comuneEsempio)}" autocomplete="address-level2">`)}
-    <details class="pv-incl vc-extra"${D.testo || D.foto.length ? ' open' : ''}><summary>${esc(V.extraTitolo)} <span class="small">${esc(V.extraNota)}</span></summary>
-      ${campo('vc-testo', esc(V.testo), `<textarea id="vc-testo" class="pv-in vc-area" data-bind="testo" maxlength="2000" placeholder="${esc(V.testoEsempio)}">${esc(D.testo)}</textarea>`)}
-      <div class="fld"><label for="vc-foto">${esc(V.foto)}</label><input type="file" id="vc-foto" accept="image/*" multiple data-file="foto"><p class="small">${esc(V.fotoNota)}</p>
-      ${D.foto.length ? `<ul class="vc-foto">${D.foto.map((f, i) => `<li>${esc(f.name)} <button type="button" class="pv-link" data-togli-foto="${i}">${esc(V.togli)}</button></li>`).join('')}</ul>` : ''}</div>
-    </details>
     <h2 class="wz-h2">${esc(K.titolo)}</h2><p class="sub">${esc(K.sotto)}</p>
     <div class="tabs2 tabs3" role="radiogroup" aria-label="${esc(K.titolo)}">${Object.entries(K.canali).map(([k, [e, t, s]]) =>
       `<button type="button" role="radio" aria-checked="${D.canale === k}" class="${D.canale === k ? 'on' : ''}" data-canale="${k}"><span class="emo" aria-hidden="true">${e}</span>${esc(t)}<small>${esc(s)}</small></button>`).join('')}</div>
@@ -129,7 +136,7 @@ function errore(msg) {
 }
 
 function manca() {
-  if (!D.audio) return V.manca.audio;
+  if (!D.audio && D.testo.trim().length < 10) return V.manca.audio;
   if (!D.regione) return V.manca.zona;
   const M = K.manca;
   if (!D.canale) return M.canale;
@@ -153,28 +160,55 @@ function carica(link, blob, nome, avanz) {
   });
 }
 
+/* Testo da salvare: il tipo di lavoro scelto davanti alla descrizione */
+const testoCompleto = () => [D.tipo ? 'Lavoro: ' + V.tipi[D.tipo] + '.' : '', D.testo.trim()].filter(Boolean).join(' ');
+
+/* Solo testo, senza vocale: richiesta da /api/lead come la vecchia "non so cosa fare", con la descrizione */
+async function inviaTesto(notaFoto) {
+  let u = {}; try { u = JSON.parse(sessionStorage.getItem('edilmen-utm') || '{}'); } catch (e) {}
+  const r = await fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+    tipo: 'procedura', nome: D.nome, cognome: D.cognome, telefono: D.canale === 'email' ? '' : D.tel, email: D.canale === 'email' ? D.mail : '', canale_contatto: D.canale,
+    comune: D.comune, regione: D.regione,
+    lavoro: { modalita: 'vecchia_scuola', tipo_lavoro: D.tipo, descrizione: testoCompleto() + (notaFoto ? ' [Il cliente ha ' + D.foto.length + ' foto da inviare: chiederle su WhatsApp]' : ''), non_sa_cosa_fare: true, origine: D.origine },
+    quotazione: null, impresa_scelta: null, appuntamento: null,
+    utm: u.utm || {}, referrer: u.referrer || '', pagina_ingresso: u.ingresso || '',
+    consensi: { privacy: true, condivisione_imprese: true, marketing: D.consensi.marketing === true }, sito_web: $('#vc-trappola')?.value || '',
+    meta_ads: window.EM_META ? EM_META.dati() : null }) });
+  const j = await r.json().catch(() => ({})); if (!r.ok || !j.ok) throw new Error(j.errore || r.status);
+  return j;
+}
+
 async function invia() {
   if (invio) return;
   const m = manca(); if (m) return errore(m);
   invio = true; D.errore = '';
   const btn = $('[data-az="invia"]'); btn.setAttribute('aria-disabled', 'true');
-  const meta = { audio: { mime: tipoBase(D.audio.type), byte: D.audio.size, durata: D.durata }, foto: D.foto.map(f => ({ mime: tipoBase(f.type), byte: f.size })) };
+  if (!D.audio && !D.foto.length) {
+    try { const j = await inviaTesto(false); D.fatto = { codice: j.codice, entro: j.entro }; traccia('vecchia_scuola_inviata', { codice: j.codice, tipo: D.tipo, mezzo: 'testo' }); invio = false; return disegna(); }
+    catch (e) { invio = false; errore(e.message === 'troppe_richieste' ? "Hai inviato molte richieste in poco tempo. Riprova tra un'ora." : V.errore); btn.removeAttribute('aria-disabled'); return; }
+  }
+  const meta = { audio: D.audio ? { mime: tipoBase(D.audio.type), byte: D.audio.size, durata: D.durata } : null, foto: D.foto.map(f => ({ mime: tipoBase(f.type), byte: f.size })) };
   try {
     const r1 = await fetch('/api/vocale', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ azione: 'prepara', ...meta }) });
-    const p = await r1.json(); if (!r1.ok) throw new Error(p.errore || r1.status);
-    const pesi = [D.audio.size, ...D.foto.map(f => f.size)], tot = pesi.reduce((a, b) => a + b, 0), fatti = pesi.map(() => 0);
+    const p = await r1.json().catch(() => ({}));
+    if (!r1.ok || (D.foto.length && !Array.isArray(p.foto))) {
+      if (D.audio) throw new Error(p.errore || r1.status);
+      // il servizio vuole sempre un vocale: la richiesta parte col testo e la nota delle foto
+      const j = await inviaTesto(true); D.fatto = { codice: j.codice, entro: j.entro }; traccia('vecchia_scuola_inviata', { codice: j.codice, tipo: D.tipo, mezzo: 'testo' }); invio = false; return disegna();
+    }
+    const file = [...(D.audio ? [[p.audio, D.audio, 'vocale']] : []), ...D.foto.map((f, i) => [p.foto[i], f, f.name])];
+    const pesi = file.map(x => x[1].size), tot = pesi.reduce((a, b) => a + b, 0) || 1, fatti = pesi.map(() => 0);
     const avanz = i => q => { fatti[i] = q * pesi[i]; btn.textContent = V.invio(Math.round(fatti.reduce((a, b) => a + b, 0) / tot * 100)); };
-    await carica(p.audio, D.audio, 'vocale', avanz(0));
-    await Promise.all(D.foto.map((f, i) => carica(p.foto[i], f, f.name, avanz(i + 1))));
+    await Promise.all(file.map(([link, blob, nome], i) => carica(link, blob, nome, avanz(i))));
     let u = {}; try { u = JSON.parse(sessionStorage.getItem('edilmen-utm') || '{}'); } catch (e) {}
     const r2 = await fetch('/api/vocale', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ azione: 'invia', id: p.id, ...meta,
-      testo: D.testo, nome: D.nome, cognome: D.cognome, telefono: D.canale === 'email' ? '' : D.tel, email: D.canale === 'email' ? D.mail : '', canale_contatto: D.canale, comune: D.comune, regione: D.regione,
+      testo: testoCompleto(), tipo_lavoro: D.tipo, nome: D.nome, cognome: D.cognome, telefono: D.canale === 'email' ? '' : D.tel, email: D.canale === 'email' ? D.mail : '', canale_contatto: D.canale, comune: D.comune, regione: D.regione,
       consensi: { privacy: true, condivisione_imprese: true, marketing: D.consensi.marketing === true }, origine: D.origine, utm: u.utm || {}, referrer: u.referrer || '', pagina_ingresso: u.ingresso || '', sito_web: $('#vc-trappola')?.value || '', meta_ads: window.EM_META ? EM_META.dati() : null }) });
     const j = await r2.json(); if (!r2.ok || !j.ok) throw new Error(j.errore || r2.status);
     D.fatto = { codice: j.codice, entro: j.entro };
-    traccia('vocale_inviato', { codice: j.codice, origine: D.origine, durata: D.durata });
+    traccia('vecchia_scuola_inviata', { codice: j.codice, origine: D.origine, tipo: D.tipo, mezzo: D.audio ? 'vocale' : 'testo', durata: D.durata });
     invio = false; disegna();
-    if (EM.say) EM.say(`Grazie, ${esc(D.nome)}! Il tuo vocale è arrivato: ci pensiamo noi.`);
+    if (EM.say) EM.say('Grazie! La tua richiesta è arrivata: ci pensiamo noi.');
   } catch (e) {
     invio = false; errore(e.message === 'troppe_richieste' ? "Hai inviato molte richieste in poco tempo. Riprova tra un'ora." : V.errore); btn.textContent = V.invia; btn.removeAttribute('aria-disabled');
   }
@@ -190,6 +224,8 @@ function clic(e) {
   if (az === 'rifai') { D.audio = null; return avviaRegistrazione(); }
   if (az === 'togli') { if (D.url) URL.revokeObjectURL(D.url); D.audio = null; D.url = null; D.durata = null; return disegna(); }
   if (az === 'invia') return invia();
+  if (az === 'digitale') { if (rec) rec.mr.stop(); return EM.apriPreventivo ? EM.apriPreventivo({ regione: D.regione }) : EM.show && EM.show('home'); }
+  if (t.dataset.tipo) { D.tipo = D.tipo === t.dataset.tipo ? null : t.dataset.tipo; return disegna(); }
   if (az === 'indietro' || az === 'home') { if (rec) rec.mr.stop(); return EM.torna ? EM.torna() : EM.show && EM.show('home'); }
   if (t.dataset.reg) { D.regione = t.dataset.reg; return disegna(); }
   if (t.dataset.canale) { D.canale = t.dataset.canale; return disegna(); }

@@ -54,7 +54,7 @@ function percorri(setup, modo, scen) {
   const S = F.statoIniziale();
   setup(S);
   let guardia = 0;
-  while (!F.FINALI.includes(S.pos) && S.pos !== 'aiuto') {
+  while (!F.FINALI.includes(S.pos) && S.pos !== 'aiuto' && S.pos !== 'vecchia') {
     if (++guardia > 80) { segnala('flusso', 'percorso infinito', scen); return; }
     const id = S.pos;
     verificaSchermata(S, id, scen);
@@ -69,44 +69,47 @@ function percorri(setup, modo, scen) {
   return S;
 }
 
-const sottoinsiemi = a => a.reduce((acc, x) => acc.concat(acc.map(s => [...s, x])), [[]]).filter(s => s.length);
-const AMB = C.AMBIENTI.map(a => a[0]), EFF = C.EFF.map(e => e[0]), IMM = C.IMMOBILI.map(i => i[0]), NUO = C.NUOVA.map(n => n[0]);
+const sottoinsiemi = a => a.reduce((acc, x) => acc.concat(acc.map(s => [...s, x])), [[]]);
+const IMM = C.IMMOBILI.map(i => i[0]), NUO = C.NUOVA.map(n => n[0]);
 const MODI = ['prima', 'ultima', 'nonso'];
+const fissa = (S, id, v) => { if (S.pos === id) F.rispondi(S, id, v); };
 
-// 1. Dalla procedura, rispondendo a tutto
-for (const modo of MODI) {
-  percorri(S => {}, modo, `diretto, risposte "${modo}"`);
-}
-// 2. Ristrutturazione completa per ogni immobile
-for (const imm of IMM) for (const modo of MODI) percorri(S => { F.rispondi(S, 'intervento', 'completa'); F.rispondi(S, 'immobile', imm); }, modo, `completa, ${imm}, ${modo}`);
-// 3. Parziale: ogni combinazione di lavori × immobile
-for (const amb of sottoinsiemi(AMB)) for (const imm of IMM) for (const modo of MODI)
-  percorri(S => { F.rispondi(S, 'intervento', 'parziale'); F.rispondi(S, 'ambienti', amb); F.rispondi(S, 'immobile', imm); }, modo, `parziale [${amb}], ${imm}, ${modo}`);
-// 4. Nuova costruzione per ogni tipo
-for (const t of NUO) for (const modo of MODI) percorri(S => { F.rispondi(S, 'intervento', 'nuova'); F.rispondi(S, 'nuovaTipo', t); }, modo, `nuova ${t}, ${modo}`);
-// 5. Efficientamento: ogni immobile × ogni kit
-for (const imm of IMM) for (const kit of sottoinsiemi(EFF)) for (const modo of MODI)
-  percorri(S => { F.rispondi(S, 'intervento', 'eff'); F.rispondi(S, 'immobile', imm); if (S.pos === 'kit') { const k = kit.filter(e => F.kitDisponibile(S).includes(e)); if (!k.length) return; F.rispondi(S, 'kit', k); } }, modo, `eff ${imm} [${kit}], ${modo}`);
-// 6. Partenze dalla home (preset come in preventivo.js applicaPreset)
-const preset = (S, job, reg) => { const [k, sub] = job.split(':'); S.regione = reg; if (k === 'eff' && sub) S.eff = [sub]; F.rispondi(S, 'intervento', k); if (k === 'eff' && sub) S.kitFisso = true; if (k === 'parziale' && sub) F.rispondi(S, 'ambienti', [sub]); if (k === 'nuova' && sub) F.rispondi(S, 'nuovaTipo', sub); };
-const JOBS = ['completa', 'nuova', 'eff', 'parziale', ...AMB.map(a => 'parziale:' + a), ...NUO.map(n => 'nuova:' + n), ...EFF.map(e => 'eff:' + e)];
-for (const job of JOBS) for (const imm of IMM) for (const modo of ['prima', 'ultima'])
-  percorri(S => { preset(S, job, 'taa'); if (S.pos === 'immobile') F.rispondi(S, 'immobile', imm); }, modo, `home "${job}", immobile ${imm}, ${modo}`);
+// 1. Dalla prima schermata, rispondendo sempre allo stesso modo
+for (const modo of MODI) percorri(S => {}, modo, `diretto, risposte "${modo}"`);
+// 2. Ristrutturazione completa: immobile × impianti × riscaldamento × aggiunte
+for (const imm of IMM) for (const imp of [true, false]) for (const risc of ['tengo', 'caldaia', 'pdc', 'ibrido']) for (const ex of sottoinsiemi(['blindato', 'clima', 'vmc', 'domotica'])) for (const modo of MODI)
+  percorri(S => { F.rispondi(S, 'intervento', 'completa'); F.rispondi(S, 'immobile', imm); S.impianti = imp; S.risc = risc; S.extra = ex; }, modo, `completa ${imm}, impianti ${imp}, ${risc}, [${ex}], ${modo}`);
+// 3. Rifacimento bagno: dimensione × doccia × sanitari
+for (const dim of ['piccolo', 'medio', 'grande']) for (const doc of ['doccia', 'vasca', 'entrambe']) for (const san of ['stessi', 'spostati']) for (const modo of MODI)
+  percorri(S => { F.rispondi(S, 'intervento', 'bagno'); S.dett.bagnoDim = dim; S.dett.bagnoDoccia = doc; S.dett.bagnoSanitari = san; }, modo, `bagno ${dim} ${doc} ${san}, ${modo}`);
+// 4. Nuova costruzione: tipo × piani × interrato × esterni
+for (const t of NUO) for (const pn of [1, 2, 3]) for (const intr of ['no', 'garage', 'interrato']) for (const est of [true, false]) for (const modo of MODI)
+  percorri(S => { F.rispondi(S, 'intervento', 'nuova'); F.rispondi(S, 'nuovaTipo', t); S.pianiNuova = pn; S.interrato = intr; S.esterni = est; }, modo, `nuova ${t}, ${pn} piani, ${intr}, esterni ${est}, ${modo}`);
 
 console.log(`Percorsi completati: ${percorsi}`);
 console.log(`Problemi distinti: ${problemi.size}`);
 for (const p of [...problemi.values()].sort((a, b) => a.tipo.localeCompare(b.tipo))) console.log(`- [${p.tipo}] ${p.msg} (×${p.n}) es.: ${p.es}`);
 
-// Controlli di senso (19/11/2026): ciò che il cliente esclude non deve entrare nel prezzo
+// Controlli di senso: ogni risposta che dice di cambiare il prezzo lo cambia davvero
 function controllo(nome, ok) { if (!ok) { console.log('ERRORE: ' + nome); process.exitCode = 1; } else console.log('ok: ' + nome); }
-{ const S = F.statoIniziale(); F.rispondi(S, 'intervento', 'completa'); S.comp.cpl_infissi = false; S.comp.cpl_riscaldamento = false;
-  const pk = C.voci(S).map(v => v.pk); controllo('completa senza finestre e pompa di calore', !pk.includes('R10') && !pk.includes('R13')); }
-{ const S = F.statoIniziale(); S.eff = ['tetto']; F.rispondi(S, 'intervento', 'eff'); S.kitFisso = true; F.rispondi(S, 'immobile', 'app');
-  controllo('tetto dalla home + appartamento: si chiedono gli interventi', S.pos === 'kit' && S.eff.length > 0); }
-{ const S = F.statoIniziale(); F.rispondi(S, 'intervento', 'eff'); S.eff = ['fv']; S.bolletta = 150; S.accumulo = false; S.immobile = 'casa';
-  controllo('fotovoltaico: 150 € ogni due mesi = 3 kWp', C.voci(S)[0].n.includes('3 kWp')); }
-{ const S = F.statoIniziale(); F.rispondi(S, 'intervento', 'nuova'); F.rispondi(S, 'nuovaTipo', 'singola');
-  controllo('nuova costruzione: si chiede il livello di finiture', F.domande(S).includes('livello')); }
-{ const S = F.statoIniziale(); F.rispondi(S, 'intervento', 'nuova'); controllo('nuova costruzione: niente "piano alto senza ascensore" né "ci abito"', !F.PER_ID.part.opzioni(S).some(p => p === 'noasc' || p === 'abitata')); }
-{ const S = F.statoIniziale(); F.rispondi(S, 'intervento', 'completa'); F.rispondi(S, 'immobile', 'app'); const base = C.stima(S); S.part = ['abitata'];
-  controllo('ci abito durante i lavori: maggiorazione del listino', C.stima(S) > base); }
+const base = (lav, f) => { const S = F.statoIniziale(); F.rispondi(S, 'intervento', lav); if (lav === 'completa') F.rispondi(S, 'immobile', 'app'); S.regione = 'taa'; f && f(S); return S; };
+const pk = S => C.voci(S).map(v => v.pk);
+controllo('un altro lavoro va alla vecchia scuola', (() => { const S = F.statoIniziale(); F.rispondi(S, 'intervento', 'vecchia'); return S.pos === 'vecchia'; })());
+controllo('"non so cosa fare" va alla vecchia scuola', (() => { const S = F.statoIniziale(); F.rispondi(S, 'intervento', F.NON_SO); return S.pos === 'vecchia'; })());
+controllo('completa senza impianti usa il pacchetto R02', pk(base('completa', S => { S.impianti = false; })).includes('R02') && !pk(base('completa', S => { S.impianti = false; })).includes('R01'));
+controllo('completa senza impianti costa meno che con', C.stima(base('completa', S => { S.impianti = false; })) < C.stima(base('completa')));
+controllo('pavimenti posati sopra costano meno che demoliti', C.stima(base('completa', S => { S.impianti = false; S.dett.pavVecchi = 'sovrapponi'; })) < C.stima(base('completa', S => { S.impianti = false; S.dett.pavVecchi = 'demolisci'; })));
+controllo('riscaldamento: tengo < caldaia < ibrido < pompa di calore', (() => { const v = ['tengo', 'caldaia', 'ibrido', 'pdc'].map(r => C.stima(base('completa', S => { S.risc = r; }))); return v[0] < v[1] && v[1] < v[2] && v[2] < v[3]; })());
+controllo('finestre: senza costa meno', C.stima(base('completa', S => { S.comp.cpl_infissi = false; })) < C.stima(base('completa')));
+controllo('aggiunte: ognuna aumenta il prezzo', ['blindato', 'clima', 'vmc', 'domotica'].every(e => C.stima(base('completa', S => { S.extra = [e]; })) > C.stima(base('completa'))));
+controllo('bagno: piccolo < medio < grande', (() => { const v = ['piccolo', 'medio', 'grande'].map(d => C.stima(base('bagno', S => { S.dett.bagnoDim = d; }))); return v[0] < v[1] && v[1] < v[2]; })());
+controllo('bagno: la vasca costa più della doccia', C.stima(base('bagno', S => { S.dett.bagnoDoccia = 'vasca'; })) > C.stima(base('bagno', S => { S.dett.bagnoDoccia = 'doccia'; })));
+controllo('bagno: sanitari spostati aggiungono lo spostamento dello scarico', pk(base('bagno', S => { S.dett.bagnoSanitari = 'spostati'; })).includes('X02') && !pk(base('bagno', S => { S.dett.bagnoSanitari = 'stessi'; })).includes('X02'));
+controllo('bagno: due bagni costano il doppio di uno', Math.abs(C.stima(base('bagno', S => { S.q.bagno = 2; })) / C.stima(base('bagno')) - 2) < 0.01);
+controllo('nuova: su un piano costa più al m² che su due', C.stima(base('nuova', S => { S.pianiNuova = 1; })) > C.stima(base('nuova', S => { S.pianiNuova = 2; })));
+controllo('nuova: garage e interrato aumentano il prezzo', C.stima(base('nuova', S => { S.interrato = 'garage'; })) > C.stima(base('nuova')) && C.stima(base('nuova', S => { S.interrato = 'interrato'; })) > C.stima(base('nuova', S => { S.interrato = 'garage'; })));
+controllo('nuova: giardino aggiunge le sistemazioni esterne', pk(base('nuova', S => { S.esterni = true; })).includes('N12'));
+controllo('nuova costruzione: niente "piano alto senza ascensore" né "ci abito"', !F.PER_ID.part.opzioni(base('nuova')).some(p => p === 'noasc' || p === 'abitata'));
+controllo('ci abito durante i lavori: maggiorazione del listino', (() => { const S = base('completa'); const b = C.stima(S); S.part = ['abitata']; return C.stima(S) > b; })());
+controllo('il bagno non chiede la superficie della casa', !F.domande(base('bagno')).includes('mq'));
+controllo('nessuna domanda ripetuta nello stesso percorso', ['completa', 'bagno', 'nuova'].every(l => { const d = F.domande(base(l)); return new Set(d).size === d.length; }));

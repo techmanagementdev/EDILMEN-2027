@@ -1,13 +1,18 @@
-/* Flusso della quotazione istantanea: quali domande fare, in che ordine, e cosa ipotizzare con "Non lo so ancora".
+/* Flusso della quotazione digitale (versione 2, 20/11/2026).
+   Prezzo subito solo per i lavori che si quotano bene a pacchetto: ristrutturazione completa, rifacimento bagno,
+   nuova costruzione. Tutto il resto passa dalla "vecchia scuola" (messaggio scritto o vocale, con foto).
+   Ogni domanda cambia il prezzo con una voce o una variante del listino EdilMen, oppure serve all'impresa per il sopralluogo.
    Nessuna grafica e nessun testo visibile (quelli stanno in js/testi.js): così si può testare in Node.
-   Scrive solo i campi dello stato che usa js/calcolo.js, senza cambiarne il calcolo. */
+   Scrive solo i campi dello stato che usa js/calcolo.js. */
 (function (root) {
 'use strict';
 const C = typeof module !== 'undefined' && module.exports ? require('./calcolo.js') : root.EdilCalcolo;
 
 const NON_SO = 'nonso';
-const val = (S, id) => S.risposte[id];
 const nonSo = (S, id) => S.risposte[id] === NON_SO;
+
+/* Lavori con prezzo subito; "vecchia" apre la modalità vecchia scuola */
+const LAVORI = ['completa', 'bagno', 'nuova', 'vecchia'];
 
 /* Superficie tipica quando non la sai */
 function mqTipici(S) {
@@ -25,120 +30,66 @@ function regioneDaComune(testo) {
   return null;
 }
 
-const fa = (S, a) => S.intervento === 'parziale' && S.ambienti.includes(a);
-const effHa = (S, e) => S.intervento === 'eff' && S.eff.includes(e);
-/* La superficie della casa serve solo dove entra nel calcolo: casa intera, nuova costruzione, tinteggiatura,
-   tetto, cappotto e pompa di calore. Per un bagno o una cucina non si chiede. */
-function serveMq(S) {
-  if (S.intervento === 'parziale') return S.ambienti.includes('tinteggiatura');
-  if (S.intervento === 'eff') return S.eff.some(e => ['tetto', 'cappotto', 'pdc'].includes(e));
-  return true;
-}
-/* Il tecnico (pratiche, progetto) si chiede solo dove serve: casa intera, nuova costruzione, bagno, cucina, tetto, cappotto, fotovoltaico.
-   Per pavimenti, tinteggiatura, infissi e impianti da soli non si chiede (edilizia libera). */
-function serveTecnico(S) {
-  if (S.intervento === 'parziale') return S.ambienti.some(a => ['bagno', 'cucina'].includes(a));
-  if (S.intervento === 'eff') return S.eff.some(e => ['tetto', 'cappotto', 'fv'].includes(e));
-  return true;
-}
+const cpl = S => S.intervento === 'completa';
+const conImpianti = S => cpl(S) && S.impianti !== false;   // R01: con impianti; R02: rinnovo senza impianti
+const bagno = S => S.intervento === 'bagno';
+const nuova = S => S.intervento === 'nuova';
+const lusso = S => nuova(S) && S.nuovaTipo === 'luxury';
+const unita = S => S.immobile === 'condo' ? Math.max(2, Math.round(S.mq / 70)) : 1;
+
 /* Domanda a scelta su un dettaglio del lavoro (campo dett.<nome>) */
 const dett = (id, se, opzioni, tipico) => ({ id, tipo: 'scelta', campo: 'dett.' + id, se, opzioni: () => opzioni, nonSo: S => { S.dett[id] = tipico; } });
-const SPECIFICHE = [
-  // Bagno
-  dett('bagnoDim', S => fa(S, 'bagno'), ['piccolo', 'medio', 'grande'], 'medio'),
-  dett('bagnoDoccia', S => fa(S, 'bagno'), ['doccia', 'vasca', 'entrambe'], 'doccia'),
-  dett('bagnoSanitari', S => fa(S, 'bagno'), ['stessi', 'spostati'], 'stessi'),
-  // Cucina
-  dett('cucinaLavello', S => fa(S, 'cucina'), ['stessa', 'altra'], 'stessa'),
-  dett('cucinaMobili', S => fa(S, 'cucina'), ['no', 'si'], 'no'),
-  // Pavimenti (anche nella ristrutturazione completa)
-  dett('pavMateriale', S => fa(S, 'pavimenti') || S.intervento === 'completa', ['gres', 'parquet'], 'gres'),
-  // Infissi e finestre
-  dett('infMateriale', S => fa(S, 'infissi') || effHa(S, 'finestre') || (S.intervento === 'completa' && S.comp.cpl_infissi !== false), ['pvc', 'alluminio', 'legnoalluminio'], 'pvc'),
-  // Impianto elettrico
-  dett('elContatore', S => fa(S, 'elettrico'), ['no', 'si'], 'no'),
-  // Impianto idraulico
-  dett('idrScarichi', S => fa(S, 'idraulico'), ['stessi', 'spostati'], 'stessi'),
-  // Tinteggiatura
-  dett('tintPareti', S => fa(S, 'tinteggiatura'), ['buone', 'irregolari', 'muffa'], 'buone'),
-  // Tetto
-  dett('amianto', S => effHa(S, 'tetto'), ['no', 'si'], 'no'),
-  // Cappotto
-  dett('isolante', S => effHa(S, 'cappotto'), ['eps', 'roccia', 'legno', 'interno'], 'eps'),
-  // Pompa di calore
-  dett('pdcTipo', S => effHa(S, 'pdc'), ['sola', 'ibrido'], 'sola'),
-];
 
-/* Tutte le domande possibili. `se` dice quando si fanno, `nonSo` cosa si ipotizza e scrive nello stato. */
+/* Tutte le domande possibili, in ordine. `se` dice quando si fanno, `nonSo` cosa si ipotizza (sempre l'ipotesi prudente). */
 const DOMANDE = [
-  { id: 'intervento', tipo: 'scelta', campo: 'intervento', opzioni: () => C.INTERVENTI.map(i => i[0]),
-    nonSo: S => { S.aiuto = true; } },
-  { id: 'ambienti', tipo: 'multi', campo: 'ambienti', se: S => S.intervento === 'parziale',
-    opzioni: () => C.AMBIENTI.map(a => a[0]), minimo: 1, nonSo: S => { S.aiuto = true; } },
-  { id: 'nuovaTipo', tipo: 'scelta', campo: 'nuovaTipo', se: S => S.intervento === 'nuova',
-    opzioni: () => C.NUOVA.map(n => n[0]), nonSo: S => { S.nuovaTipo = 'singola'; } },
-  { id: 'terreno', tipo: 'scelta', campo: 'terreno', se: S => S.intervento === 'nuova', opzioni: () => ['si', 'no'],
-    nonSo: S => { S.terreno = null; } },
-  { id: 'immobile', tipo: 'scelta', campo: 'immobile', se: S => S.intervento !== 'nuova',
-    opzioni: () => C.IMMOBILI.map(i => i[0]), nonSo: S => { S.immobile = S.intervento === 'eff' ? 'casa' : 'app'; } },
-  { id: 'kit', tipo: 'multi', campo: 'eff', se: S => S.intervento === 'eff' && !S.kitFisso, opzioni: S => kitDisponibile(S), minimo: 1,
-    nonSo: S => { S.eff = kitDisponibile(S); } },
+  { id: 'intervento', tipo: 'scelta', campo: 'intervento', opzioni: () => LAVORI, nonSo: S => { S.aiuto = true; } },
+  // Nuova costruzione
+  { id: 'nuovaTipo', tipo: 'scelta', campo: 'nuovaTipo', se: nuova, opzioni: () => C.NUOVA.map(n => n[0]), nonSo: S => { S.nuovaTipo = 'singola'; } },
+  { id: 'terreno', tipo: 'scelta', campo: 'terreno', se: nuova, opzioni: () => ['si', 'no'], nonSo: S => { S.terreno = null; } },
+  // Ristrutturazione completa: tipo di immobile (il bagno si quota uguale in casa o appartamento)
+  { id: 'immobile', tipo: 'scelta', campo: 'immobile', se: cpl, opzioni: () => C.IMMOBILI.map(i => i[0]), nonSo: S => { S.immobile = 'app'; } },
   { id: 'luogo', tipo: 'luogo', nonSo: S => { S.regione = S.regione || 'taa'; } },
-  { id: 'mq', tipo: 'numero', campo: 'mq', min: 20, max: 20000, predefinito: mqTipici, nonSo: S => { S.mq = mqTipici(S); }, se: serveMq },
-  { id: 'bagni', tipo: 'numero', campo: 'bagni', min: 1, max: 200, se: S => S.intervento === 'completa',
+  { id: 'mq', tipo: 'numero', campo: 'mq', min: 20, max: 20000, predefinito: mqTipici, nonSo: S => { S.mq = mqTipici(S); }, se: S => cpl(S) || nuova(S) },
+  // Rifacimento bagno
+  { id: 'q_bagno', tipo: 'numero', campo: 'q.bagno', min: 1, max: 50, se: bagno, predefinito: () => 1, nonSo: S => { S.q.bagno = 1; } },
+  dett('bagnoDim', bagno, ['piccolo', 'medio', 'grande'], 'medio'),
+  dett('bagnoDoccia', bagno, ['doccia', 'vasca', 'entrambe'], 'doccia'),
+  dett('bagnoSanitari', bagno, ['stessi', 'spostati'], 'spostati'),
+  // Ristrutturazione completa: con o senza impianti (cambia pacchetto: R01 o R02)
+  { id: 'impianti', tipo: 'scelta', campo: 'impianti', se: cpl, opzioni: () => [true, false], nonSo: S => { S.impianti = true; } },
+  dett('pavVecchi', S => cpl(S) && S.impianti === false, ['demolisci', 'sovrapponi'], 'demolisci'),
+  { id: 'bagni', tipo: 'numero', campo: 'bagni', min: 1, max: 200, se: conImpianti,
     predefinito: S => S.immobile === 'condo' ? Math.max(2, Math.round(S.mq / 70)) : S.mq <= 100 ? 1 : 2,
     nonSo: S => { S.bagni = S.immobile === 'condo' ? Math.max(2, Math.round(S.mq / 70)) : S.mq <= 100 ? 1 : 2; } },
-  { id: 'stanze', tipo: 'numero', campo: 'cucine', min: 1, max: 200, se: S => S.intervento === 'completa' && S.immobile === 'condo',
+  { id: 'bagniRifare', tipo: 'numero', campo: 'bagniRifare', min: 0, max: 200, se: S => cpl(S) && S.impianti === false,
+    predefinito: () => 1, nonSo: S => { S.bagniRifare = 1; } },
+  { id: 'stanze', tipo: 'numero', campo: 'cucine', min: 2, max: 200, se: S => cpl(S) && S.immobile === 'condo',
     predefinito: S => Math.max(2, Math.round(S.mq / 70)), nonSo: S => { S.cucine = Math.max(2, Math.round(S.mq / 70)); } },
-  { id: 'livello', tipo: 'scelta', campo: 'livello', opzioni: () => [0, 1, 2],
-    se: S => S.intervento === 'completa' || (S.intervento === 'nuova' && S.nuovaTipo !== 'luxury') || (S.intervento === 'parziale' && S.ambienti.some(a => ['bagno', 'cucina', 'pavimenti', 'infissi', 'tinteggiatura'].includes(a))),
-    nonSo: S => { S.livello = 1; } },
-  // Ristrutturazione parziale: una quantità per ogni lavoro scelto
-  ...['bagno', 'cucina', 'pavimenti', 'infissi', 'elettrico', 'idraulico', 'tinteggiatura'].map(a => ({
-    id: 'q_' + a, tipo: 'numero', campo: 'q.' + a, se: S => S.intervento === 'parziale' && S.ambienti.includes(a),
-    min: 1, max: 5000,
-    predefinito: S => ({ bagno: 1, cucina: 1, pavimenti: Math.round(S.mq * 0.8), infissi: 6, elettrico: S.mq, idraulico: 1, tinteggiatura: Math.round(S.mq * 3.2) })[a],
-    nonSo: S => { S.q[a] = ({ bagno: 1, cucina: 1, pavimenti: Math.round(S.mq * 0.8), infissi: 6, elettrico: S.mq, idraulico: 1, tinteggiatura: Math.round(S.mq * 3.2) })[a]; },
-  })),
-  { id: 'soffittiAlti', tipo: 'scelta', campo: 'soffittiAlti', opzioni: () => [true, false],
-    se: S => S.intervento === 'parziale' && S.ambienti.includes('tinteggiatura'), nonSo: S => { S.soffittiAlti = false; } },
-  // Nuova costruzione
-  { id: 'nUnita', tipo: 'numero', campo: 'nUnita', min: 2, max: 500, se: S => S.intervento === 'nuova' && S.nuovaTipo === 'condo',
+  // Nuova costruzione: forma e parti in più
+  { id: 'nUnita', tipo: 'numero', campo: 'nUnita', min: 2, max: 500, se: S => nuova(S) && S.nuovaTipo === 'condo',
     predefinito: S => Math.max(2, Math.round(S.mq / 80)), nonSo: S => { S.nUnita = Math.max(2, Math.round(S.mq / 80)); } },
-  { id: 'struttura', tipo: 'scelta', campo: 'struttura', opzioni: () => ['telaio', 'xlam'],
-    se: S => S.intervento === 'nuova' && S.nuovaTipo === 'legno', nonSo: S => { S.struttura = 'telaio'; } },
-  { id: 'classe', tipo: 'scelta', campo: 'classe', opzioni: () => ['a', 'a4'],
-    se: S => S.intervento === 'nuova' && S.nuovaTipo !== 'luxury', nonSo: S => { S.classe = 'a'; } },
-  { id: 'finLuxury', tipo: 'scelta', campo: 'finLuxury', opzioni: () => [0, 1, 2],
-    se: S => S.intervento === 'nuova' && S.nuovaTipo === 'luxury', nonSo: S => { S.finLuxury = 0; } },
-  { id: 'piscina', tipo: 'scelta', campo: 'piscina', opzioni: () => [true, false],
-    se: S => S.intervento === 'nuova' && S.nuovaTipo === 'luxury', nonSo: S => { S.piscina = false; } },
-  // Efficientamento
-  { id: 'piani', tipo: 'scelta', campo: 'piani', opzioni: () => [1, 2, 3, 4],
-    se: S => S.intervento === 'eff' && S.eff.some(e => e === 'tetto' || e === 'cappotto'), nonSo: S => { S.piani = 2; } },
-  { id: 'tettoTipo', tipo: 'scelta', campo: 'tettoTipo', opzioni: () => ['tegole', 'lamiera', 'piano'],
-    se: S => S.intervento === 'eff' && S.eff.includes('tetto'), nonSo: S => { S.tettoTipo = 'tegole'; } },
-  { id: 'finestre', tipo: 'numero', campo: 'finestre', min: 1, max: 500, predefinito: () => 8,
-    se: S => S.intervento === 'eff' && S.eff.includes('finestre'), nonSo: S => { S.finestre = 8; } },
-  { id: 'bolletta', tipo: 'numero', campo: 'bolletta', min: 40, max: 400, passo: 10, predefinito: () => 150,
-    se: S => S.intervento === 'eff' && S.eff.includes('fv'), nonSo: S => { S.bolletta = 150; } },
-  { id: 'accumulo', tipo: 'scelta', campo: 'accumulo', opzioni: () => [true, false],
-    se: S => S.intervento === 'eff' && S.eff.includes('fv'), nonSo: S => { S.accumulo = false; } },
-  // Ristrutturazione completa (19/11/2026): finestre e pompa di calore entravano sempre nel prezzo senza chiederlo
-  { id: 'cplFinestre', tipo: 'scelta', campo: 'comp.cpl_infissi', opzioni: () => [true, false],
-    se: S => S.intervento === 'completa', nonSo: S => { S.comp.cpl_infissi = true; } },
-  { id: 'cplPdc', tipo: 'scelta', campo: 'comp.cpl_riscaldamento', opzioni: () => [true, false],
-    se: S => S.intervento === 'completa', nonSo: S => { S.comp.cpl_riscaldamento = true; } },
-  // Domande specifiche del lavoro scelto (dal 19/10/2026): le risposte con una variante del listino cambiano il prezzo,
-  // le altre sono informazioni per il referente e l'impresa (il prezzo prudente comprende già l'accantonamento per gli imprevisti)
-  ...SPECIFICHE,
+  { id: 'pianiNuova', tipo: 'scelta', campo: 'pianiNuova', opzioni: () => [1, 2, 3], se: S => nuova(S) && S.nuovaTipo !== 'condo', nonSo: S => { S.pianiNuova = 2; } },
+  { id: 'interrato', tipo: 'scelta', campo: 'interrato', opzioni: () => ['no', 'garage', 'interrato'], se: nuova, nonSo: S => { S.interrato = 'no'; } },
+  { id: 'struttura', tipo: 'scelta', campo: 'struttura', opzioni: () => ['telaio', 'xlam'], se: S => nuova(S) && S.nuovaTipo === 'legno', nonSo: S => { S.struttura = 'telaio'; } },
+  { id: 'classe', tipo: 'scelta', campo: 'classe', opzioni: () => ['a', 'a4'], se: S => nuova(S) && !lusso(S), nonSo: S => { S.classe = 'a'; } },
+  { id: 'finLuxury', tipo: 'scelta', campo: 'finLuxury', opzioni: () => [0, 1, 2], se: lusso, nonSo: S => { S.finLuxury = 0; } },
+  { id: 'piscina', tipo: 'scelta', campo: 'piscina', opzioni: () => [true, false], se: lusso, nonSo: S => { S.piscina = false; } },
+  // Livello di finiture (per il lusso c'è finLuxury)
+  { id: 'livello', tipo: 'scelta', campo: 'livello', opzioni: () => [0, 1, 2], se: S => cpl(S) || bagno(S) || (nuova(S) && !lusso(S)), nonSo: S => { S.livello = 1; } },
+  // Ristrutturazione completa: dettagli che cambiano il prezzo
+  dett('pavMateriale', conImpianti, ['gres', 'parquet'], 'parquet'),
+  { id: 'cplFinestre', tipo: 'scelta', campo: 'comp.cpl_infissi', opzioni: () => [true, false], se: cpl, nonSo: S => { S.comp.cpl_infissi = true; } },
+  dett('infMateriale', S => cpl(S) && S.comp.cpl_infissi !== false, ['pvc', 'alluminio', 'legnoalluminio'], 'pvc'),
+  { id: 'risc', tipo: 'scelta', campo: 'risc', opzioni: () => ['tengo', 'caldaia', 'pdc', 'ibrido'], se: cpl, nonSo: S => { S.risc = 'caldaia'; } },
+  { id: 'extra', tipo: 'multi', campo: 'extra', minimo: 0, se: cpl, opzioni: () => ['blindato', 'clima', 'vmc', 'domotica'], nonSo: S => { S.extra = []; } },
+  { id: 'esterni', tipo: 'scelta', campo: 'esterni', opzioni: () => [true, false], se: nuova, nonSo: S => { S.esterni = true; } },
   // Per tutti
   { id: 'part', tipo: 'multi', campo: 'part', minimo: 0, nonSo: S => { S.part = []; },
     opzioni: S => C.PART.map(p => p[0]).filter(p =>
-      (p !== 'soffittialti' || S.intervento === 'completa') &&
-      (p !== 'noasc' || (S.intervento !== 'nuova' && S.immobile !== 'casa')) &&
-      (p !== 'abitata' || S.intervento !== 'nuova')) },
-  { id: 'tecnico', tipo: 'scelta', campo: 'tecnico', opzioni: () => ['tutto', 'permessi', 'aiuto'], nonSo: S => { S.tecnico = 'aiuto'; }, se: serveTecnico },
+      (p !== 'soffittialti' || cpl(S)) &&
+      (p !== 'noasc' || (!nuova(S) && S.immobile !== 'casa')) &&
+      (p !== 'abitata' || !nuova(S))) },
+  { id: 'tecnico', tipo: 'scelta', campo: 'tecnico', opzioni: () => ['tutto', 'permessi', 'aiuto'], nonSo: S => { S.tecnico = 'aiuto'; } },
   { id: 'incentivi', tipo: 'scelta', campo: 'incentivi', opzioni: () => ['si', 'no'], nonSo: S => { S.incentivi = 'si'; } },
 ];
 const PER_ID = Object.fromEntries(DOMANDE.map(d => [d.id, d]));
@@ -146,18 +97,13 @@ const PER_ID = Object.fromEntries(DOMANDE.map(d => [d.id, d]));
 /* Schermate finali, dopo le domande */
 const FINALI = ['quotazioni', 'prenota', 'contatto'];
 
-function kitDisponibile(S) {
-  const soloUnita = S.immobile === 'app' || S.immobile === 'neg';
-  return C.EFF.map(e => e[0]).filter(e => !soloUnita || ['finestre', 'fv', 'pdc'].includes(e));
-}
-
 function statoIniziale() {
   const S = C.statoIniziale();
   S.risposte = {};      // id domanda -> valore scelto oppure 'nonso'
   S.pos = 'intervento'; // schermata corrente
-  S.kitFisso = false;   // true se il lavoro di efficientamento arriva già scelto dalla home
-  S.aiuto = false;      // true se non sa cosa fare: si propone il contatto (poi il vocale)
+  S.aiuto = false;      // true se non sa cosa fare o sceglie un altro lavoro: si passa alla vecchia scuola
   S.canale = null;
+  S.impianti = true; S.bagniRifare = 1; S.risc = 'tengo'; S.extra = []; S.pianiNuova = 2; S.interrato = 'no'; S.esterni = false;
   S.consensi = { privacy: false, condivisione_imprese: false, marketing: false };
   return S;
 }
@@ -167,14 +113,10 @@ function domande(S) {
   return DOMANDE.filter(d => !d.se || d.se(S)).map(d => d.id);
 }
 /* Schermate in ordine: le domande, poi quotazioni, prenotazione e contatto.
-   Se il cliente non sa cosa deve fare, dopo quella domanda c'è la schermata "aiuto" (contatto, poi il vocale). */
+   Se il lavoro non ha un prezzo subito (o il cliente non lo sa), dopo la prima domanda c'è la vecchia scuola. */
 function percorso(S) {
-  const d = domande(S);
-  if (S.aiuto) return [...d.slice(0, d.indexOf(primaNonSo(S)) + 1), 'aiuto'];
-  return [...d, ...FINALI];
-}
-function primaNonSo(S) {
-  return ['intervento', 'ambienti'].find(id => nonSo(S, id)) || 'intervento';
+  if (S.aiuto) return ['intervento', 'vecchia'];
+  return [...domande(S), ...FINALI];
 }
 
 function leggi(S, campo) { return campo.startsWith('q.') ? S.q[campo.slice(2)] : campo.startsWith('dett.') ? S.dett[campo.slice(5)] : campo.startsWith('comp.') ? S.comp[campo.slice(5)] : S[campo]; }
@@ -198,22 +140,21 @@ function rispondi(S, id, valore) {
     } else {
       scrivi(S, d.campo, valore);
     }
-    if (id === 'intervento' || id === 'ambienti') S.aiuto = false;
+  }
+  if (id === 'intervento') {
+    S.aiuto = valore === NON_SO || valore === 'vecchia';
+    if (valore === 'bagno') { S.q.bagno = S.q.bagno || 1; S.ambienti = ['bagno']; }
   }
   // Finché la superficie non è stata chiesta, la stima usa quella tipica per l'immobile scelto
   if (S.risposte.mq === undefined && ['intervento', 'immobile', 'nuovaTipo'].includes(id)) S.mq = mqTipici(S);
-  if (id === 'immobile' && S.intervento === 'eff') {
-    S.eff = S.eff.filter(e => kitDisponibile(S).includes(e));
-    // il lavoro scelto in home non si fa su questo immobile (es. tetto in appartamento): si chiedono gli interventi possibili
-    if (!S.eff.length) { S.kitFisso = false; S.eff = kitDisponibile(S); }
-  }
+  if (id === 'immobile' || id === 'mq') S.cucine = Math.max(S.cucine || 1, unita(S));
   return avanti(S);
 }
 
 function valida(S, id, valore) {
   const d = PER_ID[id];
   if (valore === NON_SO) return true;
-  if (d.tipo === 'multi') return Array.isArray(valore) && valore.length >= d.minimo;
+  if (d.tipo === 'multi') return Array.isArray(valore) && valore.length >= d.minimo && valore.every(v => d.opzioni(S).includes(v));
   if (d.tipo === 'luogo') return !!(valore && (valore.regione || regioneDaComune(valore.comune)));
   if (d.tipo === 'numero') return Number.isFinite(Number(valore)) && Number(valore) >= d.min;
   return d.opzioni(S).includes(valore);
@@ -244,8 +185,7 @@ function ipotesi(S) {
 
 /* Stima orientativa durante la procedura (sempre come forchetta) */
 function stimaOrientativa(S) {
-  if (!S.intervento || S.aiuto) return null;
-  if (S.intervento === 'parziale' && !S.ambienti.length) return null;
+  if (!S.intervento || S.aiuto || !['completa', 'bagno', 'nuova'].includes(S.intervento)) return null;
   const f = C.forchetta(S);
   if (!(f.media > 0)) return null;
   return { min: Math.round(f.min / 100) * 100, max: Math.round(f.max / 100) * 100 };
@@ -253,22 +193,23 @@ function stimaOrientativa(S) {
 
 /* Salvataggio della sessione: niente dati personali, che restano solo nel browser fino all'invio */
 const PERSONALI = ['nome', 'cognome', 'tel', 'mail', 'indirizzo', 'canale', 'consensi', 'done'];
+const VERSIONE = 2;
 function serializza(S) {
   const o = {};
   for (const [k, v] of Object.entries(S)) if (!PERSONALI.includes(k) && k !== 't0') o[k] = v;
-  o.versione = 1;
+  o.versione = VERSIONE;
   return o;
 }
 function ripristina(dati) {
   const S = statoIniziale();
-  if (!dati || typeof dati !== 'object' || dati.versione !== 1) return S;
+  if (!dati || typeof dati !== 'object' || dati.versione !== VERSIONE) return S;
   for (const k of Object.keys(S)) if (k in dati && !PERSONALI.includes(k)) S[k] = dati[k];
   if (!S.dett || typeof S.dett !== 'object') S.dett = {};
   if (!percorso(S).includes(S.pos)) S.pos = 'intervento';
   return S;
 }
 
-const api = { NON_SO, DOMANDE, PER_ID, FINALI, statoIniziale, domande, percorso, rispondi, valida, avanti, indietro,
-  avanzamento, ipotesi, stimaOrientativa, serializza, ripristina, regioneDaComune, kitDisponibile, mqTipici, leggi, serveMq, serveTecnico };
+const api = { NON_SO, LAVORI, DOMANDE, PER_ID, FINALI, statoIniziale, domande, percorso, rispondi, valida, avanti, indietro,
+  avanzamento, ipotesi, stimaOrientativa, serializza, ripristina, regioneDaComune, mqTipici, leggi };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.EdilFlusso = api;
 })(this);

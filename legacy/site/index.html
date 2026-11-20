@@ -725,7 +725,7 @@ input,select,textarea{font:inherit;color:inherit}
             <p class="pick-t" id="pick-t1"><span class="pick-n">1</span>Che lavoro devi fare?</p>
             <div class="pick-cat" id="pick-cat" role="group" aria-labelledby="pick-t1"></div>
             <button type="button" class="pick-via" data-start><span class="pv-i"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M8.5 6.5h7v3h-7zM8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01"/></svg></span><span class="pv-t">Inizia la quotazione</span><span class="pv-g">È gratis<br>e senza impegno</span></button>
-            <button type="button" class="vc-home vc-sotto" data-vocale>Non hai voglia di compilare? <u>Mandaci un vocale</u></button>
+            <button type="button" class="vc-home vc-sotto" data-vocale>✍️ Preferisci la vecchia scuola? <u>Scrivici o mandaci un vocale con le foto</u></button>
           </div>
           <div class="pick-passo" id="pick-2" hidden>
             <p class="pick-t" id="pick-t2" tabindex="-1"><span class="pick-n">2</span>Dove si trova?<button type="button" class="pick-cambia" id="pick-cambia">Cambia lavoro</button></p>
@@ -953,7 +953,7 @@ input,select,textarea{font:inherit;color:inherit}
         <p>La rete di imprese edili con il rating, in Trentino-Alto Adige, Veneto e Friuli-Venezia Giulia.</p>
         <p style="font-size:.78rem;opacity:.7;margin-top:10px">Confini regionali: ISTAT, tramite openpolis/geojson-italy (CC BY 4.0).</p><p style="font-size:.78rem;opacity:.7;margin-top:6px">European Management Institute S.r.l. (business unit EdilMen), Via dei Solteri 74, 38121 Trento, C.F. e P.IVA 02604960225, PEC emi@pec.decaminada.it</p></div>
       <div class="cols">
-        <div><b>Lavori</b><a href="#preventivo" data-job="completa">Ristrutturazione completa</a><a href="#preventivo" data-job="parziale:bagno">Ristrutturazione bagno</a><a href="#preventivo" data-job="nuova:singola">Nuova costruzione</a><a href="#preventivo" data-job="eff:fv">Fotovoltaico</a><a href="#preventivo" data-job="eff:pdc">Pompa di calore</a></div>
+        <div><b>Lavori</b><a href="#preventivo" data-job="completa">Ristrutturazione completa</a><a href="#preventivo" data-job="bagno">Rifacimento bagno</a><a href="#preventivo" data-job="nuova:singola">Nuova costruzione</a><a href="#vocale" data-job="vecchia:energia">Fotovoltaico e pompa di calore</a><a href="#vocale" data-job="vecchia:altro">Altri lavori (vecchia scuola)</a></div>
         <div><b>EdilMen</b><a href="#rating" data-scroll="rating">Il rating</a><a href="/imprese">Elenco imprese</a><a href="rating.html">Come calcoliamo il rating</a><a href="aziende.html">Per le imprese</a><a href="rivendica.html">Rivendica la scheda</a><a href="blog.html">Guide e risorse</a><a href="app.html#/login">Area riservata</a></div>
         <div><b>Informazioni</b><a href="/prezzi/">Prezzi dei lavori</a><a href="/privacy">Privacy</a><a href="/cookie">Cookie</a><a href="/termini">Termini e condizioni</a><a href="#" data-cookie>Preferenze cookie</a></div>
       </div>
@@ -1035,14 +1035,15 @@ try{if(!sessionStorage.getItem('edilmen-utm')){const q=new URLSearchParams(locat
   sessionStorage.setItem('edilmen-utm',JSON.stringify({utm:u,referrer:document.referrer,ingresso:location.pathname+location.search}))}}catch(e){}
 
 /* avvio del preventivo da home */
-const JOBS=[["completa","Ristrutturazione completa",null],["parziale","Ristrutturazione parziale",AMBIENTI],["nuova","Nuova costruzione",NUOVA.map(n=>[n[0],n[1]])],["eff","Efficientamento",EFF]];
+const JOBS=[["completa","Ristrutturazione completa (prezzo subito)",null],["bagno","Rifacimento bagno (prezzo subito)",null],["nuova","Nuova costruzione (prezzo subito)",NUOVA.map(n=>[n[0],n[1]])],["vecchia","Altri lavori: vecchia scuola, con messaggio o vocale",[["cucina","Cucina"],["impianti","Impianti elettrici e idraulici"],["finiture","Pavimenti, finestre, pitture"],["tetto","Tetto, facciata, cappotto"],["energia","Fotovoltaico e pompa di calore"],["esterni","Giardini e spazi esterni"],["altro","Altro lavoro"]]]];
 function jobOptions(){return JOBS.map(([k,l,sub])=>sub?`<optgroup label="${l}">${sub.map(([v,n])=>`<option value="${k}:${v}">${n}</option>`).join('')}</optgroup>`:`<option value="${k}">${l}</option>`).join('')}
-$('#q2-job').innerHTML=jobOptions();$('#q2-job').value='parziale:bagno';
+$('#q2-job').innerHTML=jobOptions();$('#q2-job').value='bagno';
 function preset(v,reg,comune){apriPreventivo({job:v,regione:reg,comune})}
 /* scelta in home: prima la macrocategoria, poi il dove */
 /* scelta in due livelli (richiesta del 10/10/2026, per una scheda più corta): Ristrutturazione o Nuova costruzione, poi il tipo di ristrutturazione */
-const PRIMA=[['ristr','home','Ristrutturazione','Casa, bagno, cucina, impianti'],['nuova','crane','Nuova costruzione','Dal progetto alla consegna']];
-const RISTR=[['completa','home','Tutta la casa','Ristrutturazione completa, chiavi in mano'],['parziale','bath','Solo alcuni ambienti','Bagno, cucina, pavimenti, impianti'],['eff','leaf','Risparmio energetico','Fotovoltaico, cappotto, pompa di calore']];
+/* 20/11/2026: prezzo subito per ristrutturazione completa, bagno e nuova costruzione; tutto il resto con la vecchia scuola */
+const PRIMA=[['completa','home','Ristrutturazione completa','Tutta la casa, chiavi in mano · prezzo subito'],['bagno','bath','Rifacimento bagno','Bagno nuovo chiavi in mano · prezzo subito'],['nuova','crane','Nuova costruzione','Dal progetto alla consegna · prezzo subito'],['vecchia','leaf','Un altro lavoro','Cucina, tetto, impianti, fotovoltaico: vecchia scuola']];
+const RISTR=[];
 const CATEGORIE=[...PRIMA,...RISTR];
 let categoria=null;
 function mostraCat(sub){
@@ -1055,8 +1056,8 @@ mostraCat(false);
 function segnaRegione(r){$('#q-reg').value=r;$$('[data-preg]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.preg===r)));drawHero(r)}
 function passoPicker(n){$('#pick-1').hidden=n!==1;$('#pick-2').hidden=n!==2;(n===2?$('#pick-t2'):$('#pick-cat button')).focus()}
 $('#pick-cat').addEventListener('click',e=>{const b=e.target.closest('[data-cat]');if(!b)return;const k=b.dataset.cat;
-  if(k==='ristr'){mostraCat(true);$('#pick-cat button').focus();return}
-  categoria=k;const c=CATEGORIE.find(x=>x[0]===k);$('#pick-scelto').innerHTML='Hai scelto: <b>'+(RISTR.includes(c)?'Ristrutturazione, '+c[2].toLowerCase():c[2])+'</b>';segnaRegione($('#q-reg').value);passoPicker(2)});
+  if(k==='vecchia'){apriVocale({regione:$('#q-reg').value,origine:'home'});return}
+  categoria=k;const c=CATEGORIE.find(x=>x[0]===k);$('#pick-scelto').innerHTML='Hai scelto: <b>'+c[2]+'</b>';segnaRegione($('#q-reg').value);passoPicker(2)});
 $('#pick-t1').addEventListener('click',e=>{if(e.target.closest('[data-su]')){mostraCat(false);$('#pick-cat button').focus()}});
 $('#pick-cambia').addEventListener('click',()=>{mostraCat(false);passoPicker(1)});
 $$('[data-preg]').forEach(b=>b.addEventListener('click',()=>{segnaRegione(b.dataset.preg);setTimeout(()=>$('#picker').requestSubmit(),280)}));
@@ -1100,8 +1101,8 @@ const TILE_ICO={
 // cinque lavori con foto (home ispirata al modello dell'utente del 15/10/2026); l'ultimo porta alla guida prezzi
 const TILES=[['casa','Ristrutturazione','Casa, bagno, cucina, impianti e molto altro','/img/prezzi/interni-1.webp',''],
   ['interni','Nuova costruzione','Dal progetto alla consegna chiavi in mano','/img/prezzi/nuova-1.webp','nuova'],
-  ['fv','Impianti','Elettrici, idraulici, riscaldamento, fotovoltaico','/img/prezzi/impianti-1.webp','parziale:elettrico'],
-  ['infissi','Finiture','Pavimenti, serramenti, pitture, cartongesso','/img/prezzi/interni-2.webp','parziale:pavimenti'],
+  ['fv','Impianti','Elettrici, idraulici, riscaldamento, fotovoltaico','/img/prezzi/impianti-1.webp','vecchia:impianti'],
+  ['infissi','Finiture','Pavimenti, serramenti, pitture, cartongesso','/img/prezzi/interni-2.webp','vecchia:finiture'],
   ['cappotto','Spazi esterni','Giardini, terrazze, recinzioni, piscine','/img/prezzi/esterni-1.webp','link:/prezzi/sistemazioni-esterne/']];
 $('#tiles').innerHTML=TILES.map(([i,t,d,f,j])=>`${j.startsWith('link:')?`<a class="lav" href="${j.slice(5)}"`:`<button type="button" class="lav" data-tile="${j}"`}><span class="lav-f"><img src="${f}" alt="" loading="lazy" width="600" height="450"></span><span class="lav-c"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TILE_ICO[i]}</svg></span><b>${t}</b><small>${d}</small><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span>${j.startsWith('link:')?'</a>':'</button>'}`).join('');
 $$('[data-tile]').forEach(b=>b.addEventListener('click',()=>b.dataset.tile?preset(b.dataset.tile,$('#q-reg').value):apriPreventivo({regione:$('#q-reg').value})));
@@ -1159,7 +1160,7 @@ $('#avviso-x').onclick=hush;
 /* deep link */
 if(location.hash==='#vocale')apriVocale({origine:'link'});
 else if(location.hash==='#preventivo'||new URLSearchParams(location.search).get('s'))apriPreventivo({});
-window.EM={say,hush,show,apriVocale,torna:()=>{if(daPreventivo&&window.EM_PREVENTIVO){daPreventivo=false;show('wizard');EM_PREVENTIVO.ridisegna()}else show('home')}};
+window.EM={say,hush,show,apriVocale,apriPreventivo,torna:()=>{if(daPreventivo&&window.EM_PREVENTIVO){daPreventivo=false;show('wizard');EM_PREVENTIVO.ridisegna()}else show('home')}};
 })();
 </script>
 <script src="/js/menu.js" defer></script><script src="/js/consenso.js" defer></script><script src="/js/passeggiata.js" defer></script>

@@ -56,13 +56,19 @@ const emo = (id, v) => { const e = (T.domande[id].emoji || {})[String(v)]; retur
 const conferma = (ok) => `<button type="button" class="btn btn-blue pv-conferma" data-azione="avanti" aria-disabled="${!ok}">${esc(T.comuni.conferma)}</button>`;
 const nonSoBtn = (id) => `<button type="button" class="pv-nonso" data-nonso="${id}">${esc(T.domande[id]?.nonSo || T.comuni.nonSo)}</button>`;
 
+/* Le due modalità, sempre in vista sulla prima schermata */
+function modi() {
+  const V = T.vocale, b = ([e, t, d], on, az) => `<button type="button" class="pv-modo${on ? ' on' : ''}" ${az ? `data-azione="${az}"` : 'aria-current="true"'}><span class="emo" aria-hidden="true">${e}</span><span><b>${esc(t)}</b><small>${esc(d)}</small></span></button>`;
+  return `<div class="pv-modi" role="group" aria-label="Modalità di richiesta">${b(V.modoDigitale, true)}${b(V.modoVecchia, false, 'vocale')}</div>`;
+}
 function schermoScelta(d) {
   const cur = S.risposte[d.id];
-  return testa(esc(titolo(d.id)), esc(sotto(d.id))) +
+  const badge = v => { const b = (T.domande[d.id].badge || {})[String(v)]; return b ? `<span class="pv-badge${v === 'vecchia' ? ' vs' : ''}">${esc(b)}</span>` : ''; };
+  return (d.id === 'intervento' ? modi() : '') + testa(esc(titolo(d.id)), esc(sotto(d.id))) +
     `<div class="pv-opts" role="radiogroup" aria-labelledby="pv-h">${d.opzioni(S).map(v => {
       const [t, s] = etichetta(d.id, v);
-      return `<button type="button" role="radio" aria-checked="${cur === v}" class="pv-opt${cur === v ? ' on' : ''}" data-val='${esc(JSON.stringify(v))}'>${emo(d.id, v)}<span class="t">${esc(t)}</span>${s ? `<span class="d">${esc(s)}</span>` : ''}</button>`;
-    }).join('')}</div>${nonSoBtn(d.id)}${d.id === 'intervento' ? `<button type="button" class="vc-invito" data-azione="vocale">${esc(T.vocale.invitoBreve)}</button>` : ''}`;
+      return `<button type="button" role="radio" aria-checked="${cur === v}" class="pv-opt${cur === v ? ' on' : ''}" data-val='${esc(JSON.stringify(v))}'>${emo(d.id, v)}<span class="t">${esc(t)}${badge(v)}</span>${s ? `<span class="d">${esc(s)}</span>` : ''}</button>`;
+    }).join('')}</div>${d.id === 'intervento' ? '' : nonSoBtn(d.id)}`;
 }
 
 function schermoMulti(d) {
@@ -72,7 +78,7 @@ function schermoMulti(d) {
     `<div class="pv-opts pv-multi" role="group" aria-labelledby="pv-h">${d.opzioni(S).map(v => {
       const on = bozza.includes(v);
       return `<button type="button" aria-pressed="${on}" class="pv-opt${on ? ' on' : ''}" data-tog="${esc(v)}">${emo(d.id, v)}<span class="t">${esc(etichetta(d.id, v)[0])}</span><span class="chk" aria-hidden="true">${on ? '✓' : ''}</span></button>`;
-    }).join('')}</div>${nota}${conferma(F.valida(S, d.id, bozza))}${d.id === 'part' ? `<button type="button" class="pv-nonso" data-nessuna="1">${esc(T.domande.part.nessuna)}</button>` : nonSoBtn(d.id)}`;
+    }).join('')}</div>${nota}${conferma(F.valida(S, d.id, bozza))}${T.domande[d.id].nessuna ? `<button type="button" class="pv-nonso" data-nessuna="1">${esc(T.domande[d.id].nessuna)}</button>` : nonSoBtn(d.id)}`;
 }
 
 function schermoNumero(d) {
@@ -123,7 +129,7 @@ function recap() {
   const dettagli = F.domande(S).filter(id => F.PER_ID[id].campo && F.PER_ID[id].campo.startsWith('dett.') && S.risposte[id] !== undefined && S.risposte[id] !== F.NON_SO)
     .map(id => (T.domande[id].breve || {})[S.risposte[id]] || etichetta(id, S.risposte[id])[0]).join(', ');
   const dett = dettagli ? dettagli.charAt(0).toUpperCase() + dettagli.slice(1) : '';
-  const righe = [C.pacchetto(S), [im && im[1], [S.comune, reg].filter(Boolean).join(', '), F.serveMq(S) ? S.mq + ' m²' : ''].filter(Boolean).join(', '), dett].filter(Boolean);
+  const righe = [C.pacchetto(S), [im && im[1], [S.comune, reg].filter(Boolean).join(', '), F.domande(S).includes('mq') ? S.mq + ' m²' : ''].filter(Boolean).join(', '), dett].filter(Boolean);
   const servizi = [Q.servizi[S.tecnico], S.incentivi === 'si' ? Q.servizi.incentivi : null].filter(Boolean);
   return `<section class="pv-riep" aria-label="${esc(Q.riepilogo)}"><h2>${esc(Q.riepilogo)}</h2><ul>${righe.map(r => `<li><span class="ok" aria-hidden="true">✓</span>${esc(r)}</li>`).join('')}
     ${servizi.map(r => `<li class="srv">${esc(r)}</li>`).join('')}</ul></section>`;
@@ -140,13 +146,16 @@ function boxIpotesi() {
 
 /* Cosa comprende il prezzo: solo le voci che il calcolo usa davvero (nessuna promessa contestabile) */
 function inclusi() {
-  const Q = T.quotazioni;
-  const voci = C.voci(S).map(v => [v.n, '']);
-  if (!voci.length) return '';
+  const Q = T.quotazioni, vv = C.voci(S);
+  if (!vv.length) return '';
+  const cl = ((window.EM_LISTINO || {}).checklist || {})[vv[0].pk] || [], L = S.intervento === 'nuova' && S.nuovaTipo === 'luxury' ? 2 : S.livello;
+  const presi = vv.map(v => v.pk).filter(Boolean), aggiunto = x => presi.some(c => c !== vv[0].pk && x.t.includes(c));
+  const dentro = cl.filter(x => x.s === 'i'), misura = cl.filter(x => x.s === 'v'), fuori = cl.filter(x => x.s === 'e' && !aggiunto(x));
+  const voci = dentro.length ? [...dentro.map(x => [x.t, (x.m || [])[L] || '']), ...vv.slice(1).map(v => [v.n, ''])] : vv.map(v => [v.n, '']);
   if (S.tecnico === 'aiuto' && S.intervento !== 'nuova') voci.push([Q.tecniche, '']);
   voci.push([Q.sicurezza, '']);
   return `<details class="pv-incl"><summary>${esc(Q.incluso)}</summary><ul class="pv-voci">${voci.map(([n, d]) =>
-    `<li><span class="ok" aria-hidden="true">✓</span><span><b>${esc(n)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span></li>`).join('')}</ul><p class="small">${esc(Q.inclusoNota)}</p></details>`;
+    `<li><span class="ok" aria-hidden="true">✓</span><span><b>${esc(n)}</b>${d ? `<small>${esc(d)}</small>` : ''}</span></li>`).join('')}</ul>${misura.length ? `<p class="pv-lbl">${esc(Q.misura)}</p><ul class="pv-voci pv-fuori">${misura.map(x => `<li><span aria-hidden="true">±</span><span>${esc(x.t)}</span></li>`).join('')}</ul>` : ''}${fuori.length ? `<p class="pv-lbl">${esc(Q.escluso)}</p><ul class="pv-voci pv-fuori">${fuori.map(x => `<li><span aria-hidden="true">–</span><span>${esc(x.t)}</span></li>`).join('')}</ul>` : ''}<p class="small">${esc(Q.inclusoNota)}</p></details>`;
 }
 
 function schermoQuotazioni() {
@@ -214,7 +223,7 @@ function corpo() {
   if (S.pos === 'quotazioni') return schermoQuotazioni();
   if (S.pos === 'prenota') return schermoPrenota();
   if (S.pos === 'contatto') return schermoContatto(false);
-  if (S.pos === 'aiuto') return schermoContatto(true);
+  if (S.pos === 'aiuto' || S.pos === 'vecchia') return schermoContatto(true);
   return '';
 }
 
@@ -252,7 +261,7 @@ function disegna(focus = true) {
     ${inviato ? '' : `<div class="pv-top"><div class="pv-riga"><span>${esc(T.comuni.passo(a.passo, a.totale))}</span>
       ${st ? `<span class="pv-stima" aria-live="polite"><small>${esc(T.comuni.stima)}</small> <b>${T.comuni.forchetta(st.min, st.max, eur)}</b></span>` : ''}</div>
       <div class="wz-bar"><i style="width:${Math.round(a.quota * 100)}%"></i></div></div>`}
-    <div class="pv-corpo" id="pv-corpo">${html}</div>
+    <div class="pv-corpo" id="pv-corpo">${html}${F.PER_ID[S.pos] && S.pos !== 'intervento' && !inviato ? `<button type="button" class="vc-invito" data-azione="vocale">${esc(T.vocale.invitoBreve)}</button>` : ''}</div>
     ${inviato ? '' : `<div class="pv-frecce">${freccia('sx', 'indietro', true, T.comuni.indietro)}${puoAvanzare() !== null ? freccia('dx', 'avanza', puoAvanzare(), T.comuni.avanti || 'Avanti') : ''}</div>`}
     ${inviato ? '' : `<div class="wz-foot pv-piede"><div class="in">
       <button type="button" class="btn btn-line pv-indietro" data-azione="indietro">${esc(T.comuni.indietro)}</button>
@@ -362,7 +371,7 @@ async function invia() {
 /* Finché il gestionale non legge dal database, la richiesta compare anche nell'area riservata dimostrativa di questo browser */
 function copiaNelGestionaleDemo(codice, d) {
   try {
-    const tip = { completa: '1.2.a', parziale: { bagno: '1.2.f', cucina: '1.2.c', pavimenti: '1.2.h', infissi: '1.2.i', elettrico: '1.2.d', idraulico: '1.2.e', tinteggiatura: '1.2.g' }[S.ambienti[0]] || '1.2.c', nuova: '1.1.a', eff: { tetto: '1.3.a', finestre: '1.3.c', cappotto: '1.3.a', fv: S.accumulo ? '2.1.c' : '2.1.b', pdc: '1.3.b' }[S.eff[0]] || '1.3.a' }[S.intervento] || '1.2.c';
+    const tip = { completa: '1.2.a', bagno: '1.2.f', parziale: { bagno: '1.2.f', cucina: '1.2.c', pavimenti: '1.2.h', infissi: '1.2.i', elettrico: '1.2.d', idraulico: '1.2.e', tinteggiatura: '1.2.g' }[S.ambienti[0]] || '1.2.c', nuova: '1.1.a', eff: { tetto: '1.3.a', finestre: '1.3.c', cappotto: '1.3.a', fv: S.accumulo ? '2.1.c' : '2.1.b', pdc: '1.3.b' }[S.eff[0]] || '1.3.a' }[S.intervento] || '1.2.c';
     const citta = { taa: 'Trento', ven: 'Padova', fvg: 'Udine' }[S.regione] || 'Trento';
     const ib = JSON.parse(localStorage.getItem('edilmen-inbox') || '[]');
     ib.unshift({ id: codice, data: new Date().toISOString(), fonte: 'sito', cliente: { nome: (S.nome + ' ' + S.cognome).trim(), tel: S.tel, mail: S.mail, canale: { whatsapp: 'WhatsApp', email: 'Email' }[S.canale] || 'Telefono' },
@@ -385,6 +394,7 @@ async function linkPerDopo() {
 function clic(e) {
   const t = e.target.closest('button,[data-azione],summary'); if (!t || !app().contains(t)) return;
   const d = F.PER_ID[S.pos];
+  if (S.pos === 'intervento' && (t.dataset.nonso || t.dataset.val === '"vecchia"')) return vecchiaScuola(null);
   if (t.dataset.nonso) return rispondi(F.NON_SO);
   if (t.dataset.val !== undefined) { evidenzia(t); return rispondi(JSON.parse(t.dataset.val), PAUSA); }
   if (t.dataset.num !== undefined) { evidenzia(t); return rispondi(Number(t.dataset.num), PAUSA); }
@@ -401,7 +411,7 @@ function clic(e) {
   if (az === 'indietro') { clearTimeout(attesa); attesa = null; if (S.pos === 'intervento' || inviato) return EM.show && EM.show('home'); bozza = null; F.indietro(S); salva(); return disegna(); }
   if (az === 'avanza') return avanza();
   if (az === 'salva') return linkPerDopo();
-  if (az === 'vocale') return EM.apriVocale && EM.apriVocale({ regione: S.regione, comune: S.comune, origine: 'procedura-' + S.pos, daPreventivo: true });
+  if (az === 'vocale') return vecchiaScuola(S.intervento && S.intervento !== 'vecchia' ? S.intervento : null);
   if (az === 'nuova') { inviato = null; S = F.statoIniziale(); visti = new Set(); dimentica(); traccia('procedura_avviata', { da: 'nuova' }); return disegna(); }
   if (az === 'home') return EM.show && EM.show('home');
   if (az === 'avanti') {
@@ -455,16 +465,28 @@ async function caricaConsensi() {
   if (!Array.isArray(testiConsenso) || !testiConsenso.length) testiConsenso = T.consensiRiserva;
 }
 
+/* Vecchia scuola: messaggio scritto o vocale, con le foto (js/vocale.js) */
+function vecchiaScuola(tipo) {
+  traccia('vecchia_scuola_aperta', { da: S.pos, tipo });
+  return EM.apriVocale && EM.apriVocale({ regione: S.regione, comune: S.comune, tipo, origine: 'procedura-' + S.pos, daPreventivo: S.pos !== 'intervento' });
+}
+
 /* ---------- avvio ---------- */
+/* Dalla home arrivano: completa, bagno, nuova[:tipo] (prezzo subito) oppure vecchia:<tipo>.
+   I vecchi codici (parziale:x, eff:x) dei link già in giro vanno alla vecchia scuola, tranne il bagno. */
+function lavoroDaPreset(job) {
+  const [k, sub] = String(job || '').split(':');
+  if (k === 'parziale' && sub === 'bagno') return ['bagno'];
+  if (k === 'parziale') return ['vecchia', { cucina: 'cucina', pavimenti: 'finiture', infissi: 'finiture', tinteggiatura: 'finiture', elettrico: 'impianti', idraulico: 'impianti' }[sub] || 'altro'];
+  if (k === 'eff') return ['vecchia', { tetto: 'tetto', cappotto: 'tetto', finestre: 'finiture', fv: 'energia', pdc: 'energia' }[sub] || 'energia'];
+  return [k, sub];
+}
 function applicaPreset(p) {
   if (!p || !p.job) return;
-  const [k, sub] = p.job.split(':');
+  const [k, sub] = lavoroDaPreset(p.job);
   if (p.regione) S.regione = p.regione;
   if (p.comune) { S.comune = p.comune; S.regione = F.regioneDaComune(p.comune) || S.regione; }
-  if (k === 'eff' && sub) S.eff = [sub];
   F.rispondi(S, 'intervento', k);
-  if (k === 'eff' && sub) S.kitFisso = true;   // lavoro già scelto dalla home: niente domanda sugli interventi
-  if (k === 'parziale' && sub) F.rispondi(S, 'ambienti', [sub]);
   if (k === 'nuova' && sub) F.rispondi(S, 'nuovaTipo', sub);
 }
 
@@ -489,6 +511,9 @@ async function avvia(preset) {
   inviato = null; bozza = null; visti = new Set();
   const daLink = await ripresaDaLink();
   if (daLink) { S = daLink; }
+  else if (preset && preset.job && lavoroDaPreset(preset.job)[0] === 'vecchia') {
+    return EM.apriVocale && EM.apriVocale({ regione: preset.regione, comune: preset.comune, tipo: lavoroDaPreset(preset.job)[1], origine: 'home' });
+  }
   else if (preset && preset.job) { S = F.statoIniziale(); try { localStorage.removeItem(CHIAVE_ID); } catch (e) {} applicaPreset(preset); }
   else {
     const loc = salvataLocale();

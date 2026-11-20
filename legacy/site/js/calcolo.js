@@ -49,6 +49,8 @@ function varianti(S,codice){const d=S.dett||{},v=[];
 /* Nome della voce con le varianti scelte, es. "Bagno chiavi in mano, vasca al posto della doccia" */
 function conVarianti(n,S,codice,liv){const L=listino(),vs=varianti(S,codice).map(c=>L.varianti.find(x=>x.c===c)).filter(x=>x&&x.livelli.includes(liv));
   return vs.length?n+", "+vs.map(x=>x.nome.charAt(0).toLowerCase()+x.nome.slice(1)).join(", "):n}
+/* Prezzo di una voce variabile del listino (es. X02 spostamento colonna di scarico), per livello */
+function variabile(codice,liv){const L=listino();for(const g of Object.values(L.variabili||{}))for(const v of (Array.isArray(g)?g:[g]))if(v&&v.v===codice)return v.p[liv];return 0}
 const MQ_FINESTRA=1.9;   // m² medi di una finestra o portafinestra: il pacchetto R10 è a m² di serramento
 const R01_COPRE=["preparazione","demolizioni","murature","cartongesso","elettrico","idraulico","massetti","pavimenti","rivestimenti","porte","tinteggiatura"];
 function coefTerritorio(S){const T=territorio(),C=listino().parametri.territorio,sigla=T&&S.comune?T.provinciaDa(S.comune):null;
@@ -61,23 +63,43 @@ function voci(S){
   const facciata=()=>S.cappottoMq||Math.round(Math.sqrt(S.mq/S.piani)*4*3*S.piani);
   const copertura=()=>S.tettoMq||Math.round(S.mq/S.piani*1.15);
   const pesoOk=(list,prefix)=>{const tot=list.reduce((s,c)=>s+c[2],0)||1;const sel=list.reduce((s,c)=>s+(compChecked(prefix+c[0])?c[2]:0),0);return sel/tot};
-  if(S.intervento==="completa"){const w=pesoOk(COMP_COMPLETA.filter(c=>R01_COPRE.includes(c[0])),"cpl_");
-    add(conVarianti("Ristrutturazione completa con impianti, livello "+LIVELLI[L].toLowerCase(),S,"R01",L),"m²",S.mq,prezzo("R01",L,varianti(S,"R01"))*w,"R01");
-    const inclusi=Math.max(1,Math.round(S.mq/85*1.5));   // il pacchetto comprende 1,5 bagni ogni 85 m²
-    if(S.bagni>inclusi)add("Bagno in più","bagno",S.bagni-inclusi,prezzo("R03",L),"R03");
+  if(S.intervento==="completa"){const alloggi=S.immobile==="condo"?Math.max(2,S.cucine||2):1;
+    if(S.impianti===false){   // rinnovo completo senza rifare gli impianti (pacchetto R02)
+      const vr=(S.dett||{}).pavVecchi==="sovrapponi"?[]:["VA04"];
+      add("Rinnovo completo chiavi in mano senza impianti"+(vr.length?", demolizione dei pavimenti vecchi":", posa sopra i pavimenti esistenti"),"m²",S.mq,prezzo("R02",L,vr),"R02");
+      if(S.bagniRifare>0)add("Bagno rifatto da zero","bagno",S.bagniRifare,prezzo("R03",L),"R03");}
+    else{const w=pesoOk(COMP_COMPLETA.filter(c=>R01_COPRE.includes(c[0])),"cpl_");
+      add(conVarianti("Ristrutturazione completa con impianti, livello "+LIVELLI[L].toLowerCase(),S,"R01",L),"m²",S.mq,prezzo("R01",L,varianti(S,"R01"))*w,"R01");
+      const inclusi=Math.max(1,Math.round(S.mq/85*1.5));   // il pacchetto comprende 1,5 bagni ogni 85 m²
+      if(S.bagni>inclusi)add("Bagno in più","bagno",S.bagni-inclusi,prezzo("R03",L),"R03");}
     if(compChecked("cpl_infissi"))add(conVarianti("Serramenti esterni",S,"R10",L),"finestra",Math.max(1,Math.round(S.mq*0.18/MQ_FINESTRA)),prezzo("R10",L,varianti(S,"R10"))*MQ_FINESTRA,"R10");
-    if(compChecked("cpl_riscaldamento"))add("Pompa di calore al posto della caldaia","alloggio",S.immobile==="condo"?S.cucine:1,prezzo("R13",L),"R13");}
+    const risc=S.risc||(compChecked("cpl_riscaldamento")?"pdc":"tengo");
+    if(risc==="caldaia")add("Caldaia a condensazione nuova","alloggio",alloggi,prezzo("R36",L),"R36");
+    if(risc==="pdc")add("Pompa di calore al posto della caldaia","alloggio",alloggi,prezzo("R13",L),"R13");
+    if(risc==="ibrido")add("Sistema ibrido caldaia + pompa di calore","alloggio",alloggi,prezzo("R13",L,["VA10"]),"R13");
+    const ex=S.extra||[];
+    if(ex.includes("blindato"))add("Portoncino blindato","porta",alloggi,prezzo("R25",L),"R25");
+    if(ex.includes("clima"))add("Climatizzazione","split",Math.max(2,Math.round(S.mq/30)),prezzo("R14",L),"R14");
+    if(ex.includes("vmc"))add("Ventilazione con recupero di calore","apparecchio",Math.max(1,Math.round(S.mq/35)),prezzo("R15",L),"R15");
+    if(ex.includes("domotica"))add("Domotica e casa smart","m²",S.mq,prezzo("R23",L),"R23");}
+  if(S.intervento==="bagno"){const n=Math.max(1,S.q.bagno||1),d=S.dett||{};
+    // bagno grande (oltre 7 m²): +20% sul pacchetto di riferimento da 5 m² (stima EdilMen, il listino ha solo la variante "piccolo")
+    add(conVarianti("Rifacimento bagno chiavi in mano",S,"R03",L)+(d.bagnoDim==="grande"?", bagno grande":""),"bagno",n,prezzo("R03",L,varianti(S,"R03"))*(d.bagnoDim==="grande"?1.2:1),"R03");
+    if(d.bagnoSanitari==="spostati")add("Spostamento della colonna di scarico","bagno",n,variabile("X02",L)*(1+listino().pacchetti.find(x=>x.c==="R03").acc),"X02");}
   if(S.intervento==="parziale"){
     const P={bagno:["Bagno chiavi in mano","bagno","R03",1],cucina:["Cucina, impianti e finiture","cucina","R04",1],pavimenti:["Pavimenti, fornitura e posa","m²","R05",1],infissi:["Serramenti esterni, sostituzione","finestra","R10",MQ_FINESTRA],elettrico:["Impianto elettrico nuovo","m²","R07",1],idraulico:["Impianto idrico e scarichi di bagno e cucina","alloggio","R08",1],tinteggiatura:["Pitture pareti e soffitti","m² di pareti","R06",1/3.2]};
     S.ambienti.forEach(a=>{const p=P[a];const items=(MPARZ[a]&&MPARZ[a].incluso)||[];const n=items.length;const checked=items.filter((_,i)=>compChecked(`parz_${a}_${i}`)).length;const w=n?checked/n:1;add(conVarianti(p[0],S,p[2],L),p[1],S.q[a]||0,prezzo(p[2],L,varianti(S,p[2]))*p[3]*w,p[2])});
     if(S.ambienti.includes("tinteggiatura")&&S.soffittiAlti)add("Maggiorazione soffitti oltre 3 m","corpo",1,(S.q.tinteggiatura||0)*prezzo("R06",L)/3.2*0.15);}
   if(S.intervento==="nuova"){const lux=S.nuovaTipo==="luxury",liv=lux?2:L;
-    let u=prezzo("N01",liv,S.nuovaTipo==="legno"?[S.struttura==="xlam"?"VA17":"VA16"]:[]);
+    let u=prezzo("N01",liv,[...(S.nuovaTipo==="legno"?[S.struttura==="xlam"?"VA17":"VA16"]:[]),...(S.pianiNuova===1&&S.nuovaTipo!=="condo"?["VA19"]:[])]);
     if(S.nuovaTipo==="condo")u*=S.nUnita>=8?0.78:0.84;   // nessun pacchetto condominio nel listino: stima sul prezzo della casa singola
     const w=lux?1:pesoOk(COMP_NUOVA,"nuo_");
     add("Nuova costruzione, "+NUOVA.find(t=>t[0]===S.nuovaTipo)[1].toLowerCase(),"m²",S.mq,u*w,"N01");
     if(lux){add("Finiture "+LUX_LIVELLI[S.finLuxury].toLowerCase(),"m²",S.mq,{0:250,1:450,2:700}[S.finLuxury]);if(S.piscina)add("Piscina interrata con impianti","corpo",1,45000)}
     else if(S.classe==="a4"&&liv<2)add("Classe A4 / CasaClima Gold","m²",S.mq,u*0.08);
+    if(S.interrato==="garage")add("Garage interrato","m²",30,prezzo("N13",liv),"N13");
+    if(S.interrato==="interrato")add("Piano interrato","m²",Math.round(S.mq/Math.max(1,S.nuovaTipo==="condo"?3:S.pianiNuova||2)),prezzo("N13",liv),"N13");
+    if(S.esterni)add("Sistemazioni esterne: giardino, vialetti e recinzione","m²",Math.round(S.mq*(S.nuovaTipo==="condo"?0.5:1)),prezzo("N12",liv),"N12");
     if(S.tecnico==="aiuto"){const lavori=v.reduce((s,x)=>s+x.tot,0);add("Progettazione, direzione lavori, pratiche","corpo",1,Math.round(lavori*listino().parametri.tecniche))}}
   if(S.intervento==="eff"){
     const wEff=a=>{const items=(MEFF[a]&&MEFF[a].incluso)||[];const n=items.length;const checked=items.filter((_,i)=>compChecked(`eff_${a}_${i}`)).length;return n?checked/n:1};
@@ -98,7 +120,7 @@ function stima(S){const P=listino().parametri,g=P.logistica,has=p=>S.part.includ
   let t=voci(S).reduce((s,x)=>s+x.tot,0);if(S.immobile==="neg")t*=0.9;
   t*=coefTerritorio(S);if(has("abitata"))t*=g.abitata;if(has("noasc"))t*=g.noasc;if(has("ztl")||has("accesso"))t*=g.ztl;if(has("soffittialti"))t*=1.08;
   t*=1+P.sicurezza;if(S.tecnico==="aiuto"&&S.intervento!=="nuova")t*=1+P.tecniche;return t}
-function pacchetto(S){return{completa:"Ristrutturazione completa chiavi in mano",parziale:"Ristrutturazione "+(S.ambienti.length?S.ambienti.slice(0,2).map(a=>AMBIENTI.find(x=>x[0]===a)[1].toLowerCase()).join(" e "):"parziale"),nuova:NUOVA.find(t=>t[0]===S.nuovaTipo)[1],eff:"Efficientamento: "+S.eff.map(e=>EFF.find(x=>x[0]===e)[1].toLowerCase()).join(", ")}[S.intervento]||""}
+function pacchetto(S){return{completa:S.impianti===false?"Rinnovo completo chiavi in mano, impianti esistenti":"Ristrutturazione completa chiavi in mano",bagno:"Rifacimento bagno chiavi in mano"+((S.q.bagno||1)>1?" ("+S.q.bagno+" bagni)":""),parziale:"Ristrutturazione "+(S.ambienti.length?S.ambienti.slice(0,2).map(a=>AMBIENTI.find(x=>x[0]===a)[1].toLowerCase()).join(" e "):"parziale"),nuova:NUOVA.find(t=>t[0]===S.nuovaTipo)[1],eff:"Efficientamento: "+S.eff.map(e=>EFF.find(x=>x[0]===e)[1].toLowerCase()).join(", ")}[S.intervento]||""}
 /* Stato iniziale della procedura: i valori predefiniti entrano nel calcolo. */
 const statoIniziale=()=>({step:1,dett:{},intervento:null,ambienti:[],eff:["tetto","finestre","cappotto","fv","pdc"],immobile:null,regione:null,comune:"",tecnico:null,incentivi:null,comp:{},
   mq:120,bagni:2,cucine:1,piani:1,part:[],livello:1,soffittiAlti:false,q:{bagno:1,cucina:1,pavimenti:60,infissi:6,elettrico:0,idraulico:1,tinteggiatura:0},
@@ -108,6 +130,6 @@ const statoIniziale=()=>({step:1,dett:{},intervento:null,ambienti:[],eff:["tetto
 function forchetta(S){const b=stima(S);return {min:b*0.93,media:b,max:b*1.11}}
 function offerte(S){const b=stima(S);return IMPRESE.map(im=>({lettera:im[0],scarto:im[1],giorni:im[2],rating:im[3],prezzo:b*(1+im[1]/100)}))}
 
-const api={prezzo,varianti,coefTerritorio,INTERVENTI,AMBIENTI,EFF,IMMOBILI,NUOVA,LUX_LIVELLI,PART,LIVELLI,COMP_COMPLETA,COMP_NUOVA,MPARZ,MEFF,IMPRESE,statoIniziale,voci,stima,pacchetto,forchetta,offerte};
+const api={prezzo,variabile,varianti,coefTerritorio,INTERVENTI,AMBIENTI,EFF,IMMOBILI,NUOVA,LUX_LIVELLI,PART,LIVELLI,COMP_COMPLETA,COMP_NUOVA,MPARZ,MEFF,IMPRESE,statoIniziale,voci,stima,pacchetto,forchetta,offerte};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.EdilCalcolo=api;
 })(this);

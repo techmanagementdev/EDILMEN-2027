@@ -168,3 +168,19 @@ input[type=range]#pv-num{width:100%;margin-top:28px;accent-color:var(--blue);hei
 .pa-passi li .ok{display:grid;place-items:center;width:24px;height:24px;flex:none;border-radius:50%;background:#E6EBF7;color:transparent;font-size:14px;font-weight:900;transition:background .3s,color .3s}
 .pa-passi li.on{color:#10204A}.pa-passi li.on .ok{background:#1D7F48;color:#fff}
 @media (prefers-reduced-motion:reduce){.pa-nuvola,.pa-nuvola svg{animation:none}}
+
+/* Quotazione digitale e vecchia scuola (20/11/2026) */
+.pv-modi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 22px;padding:5px;border-radius:calc(var(--r) + 4px);background:linear-gradient(135deg,rgba(20,71,230,.08),rgba(255,106,43,.08));border:1px solid var(--line)}
+.pv-modo{display:flex;gap:10px;align-items:flex-start;text-align:left;padding:12px 14px;border:0;border-radius:var(--r);background:transparent;font:inherit;color:inherit;cursor:pointer;transition:background .15s,box-shadow .15s}
+.pv-modo .emo{font-size:1.4rem;line-height:1}
+.pv-modo b{display:block;font-size:.98rem}
+.pv-modo small{display:block;color:var(--muted);font-size:.8rem;line-height:1.3;margin-top:2px}
+.pv-modo.on{background:var(--surface);box-shadow:0 6px 18px -10px rgba(16,32,74,.45)}
+.pv-modo:not(.on):hover{background:rgba(255,255,255,.6)}
+.pv-badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--green-soft,#E1F4E8);color:var(--green,#1D7F48);font-size:.72rem;font-weight:800;letter-spacing:.02em;vertical-align:2px}
+.pv-badge.vs{background:var(--orange-soft,#FFEDE3);color:var(--orange-d,#EB5716)}
+.vc-tipi{margin-top:10px}
+.vc-tipi .pv-chip{min-height:42px;padding:0 14px;font-weight:600}
+.vc .vc-area{min-height:130px}
+.pv-fuori li{color:var(--muted)}
+@media (max-width:560px){.pv-modi{grid-template-columns:1fr}.pv-modo small{display:none}}
