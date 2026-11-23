@@ -114,3 +114,18 @@ html.edm-moto [data-edm-in]{opacity:0}
   html.edm-moto [data-edm-in]{opacity:1}
   .lav img{transition:none}
 }
+
+/* Lenis: scorrimento morbido (regole consigliate dalla libreria) */
+html.lenis,html.lenis body{height:auto}
+html.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-smooth iframe{pointer-events:none}
+
+/* React Bits · SpotlightCard: luce calda che segue il puntatore e accende il bordo */
+.edm-spot{position:relative;isolation:isolate}
+.edm-spot-l,.edm-spot-b{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0}
+.edm-spot-l{z-index:2;background:radial-gradient(260px circle at var(--sx,50%) var(--sy,50%),rgba(200,70,12,.09),transparent 70%)}
+.edm-spot-b{z-index:3;padding:1px;background:radial-gradient(180px circle at var(--sx,50%) var(--sy,50%),rgba(200,70,12,.55),transparent 70%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.lav img{transition:none}
+.lav:hover img{transform:none}
