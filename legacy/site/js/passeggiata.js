@@ -6,7 +6,7 @@
 (function () {
 'use strict';
 if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-var IMG = '/img/omino-volo.webp', MAX = 3, PAUSA = 25000, SCROLL = 900;
+var IMG = '/img/omino-volo.webp?v=2', MAX = 3, PAUSA = 25000, SCROLL = 900;
 var fatti = 0, ultimo = Date.now(), scorso = 0, yPrima = window.scrollY, attivo = false;
 var FRASI = ['Ti serve un prezzo? Toccami!', 'Il sopralluogo è gratis!', 'Prezzi veri, imprese verificate.', 'Ci penso io a trovare l\'impresa giusta.'];
 
