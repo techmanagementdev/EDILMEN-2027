@@ -12,10 +12,10 @@
   color-scheme:light;
   --side:#0A1A4A; --side2:#10256A; --side-ink:#C9D3EE; --side-muted:#7F8DB8;
   --bg:#F4F6FB; --surface:#FFFFFF; --surface2:#F8FAFD; --ink:#0E1422; --ink2:#2A3142; --muted:#5E6679; --line:#E3E8F1; --line2:#D3DAE7;
-  --blue:#1447E6; --blue-d:#0F37B8; --blue-soft:#EAF0FF; --blue-line:#A9BDF6;
+  --blue:#0077AA; --blue-d:#005F88; --blue-soft:#E6F4FA; --blue-line:#9ED3EA;
   --green:#18864B; --green-soft:#E2F5EA; --green-line:#9ED7B5;
   --amber:#B7791F; --amber-soft:#FDF3DC; --red:#C43D24; --red-soft:#FDEBE6; --violet:#6D3FD1; --violet-soft:#F0EAFD;
-  --orange:#FF6A2B; --star:#F2A516;
+  --orange:#1E8A43; --star:#F2A516;
   --r-sm:8px; --r:12px; --r-lg:16px;
   --display:"Figtree",ui-sans-serif,system-ui,sans-serif;
   --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -386,7 +386,7 @@ table.t{width:100%;border-collapse:collapse;font-size:.86rem}
 .g-bub.hide{transform:scale(.6);opacity:0;pointer-events:none}
 .g-name{font-size:.78rem;font-weight:700;color:#8FA8F7;margin-bottom:4px}
 .g-txt{font-size:.9rem;line-height:1.45}
-.g-txt b{color:#FFB48E;font-weight:600}
+.g-txt b{color:#9FD8AE;font-weight:600}
 .g-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .g-act:empty{display:none}
 .g-act button{background:#fff;color:var(--ink);font-weight:600;font-size:.8rem;padding:6px 11px;border-radius:8px}
@@ -400,12 +400,12 @@ table.t{width:100%;border-collapse:collapse;font-size:.86rem}
 .guide.jump .g-me img{animation:jump .7s ease}
 @keyframes jump{30%{transform:translateY(-14px)}60%{transform:translateY(0) scale(.97)}}
 .spot{animation:spot 1.6s ease-out infinite}
-@keyframes spot{0%{box-shadow:0 0 0 0 rgba(255,106,43,.7)}70%{box-shadow:0 0 0 10px rgba(255,106,43,0)}100%{box-shadow:0 0 0 0 rgba(255,106,43,0)}}
+@keyframes spot{0%{box-shadow:0 0 0 0 rgba(30,138,67,.7)}70%{box-shadow:0 0 0 10px rgba(30,138,67,0)}100%{box-shadow:0 0 0 0 rgba(30,138,67,0)}}
 body.no-guide .guide{display:none}
 @media (max-width:600px){.g-me,.g-me img{width:56px;height:56px;border-radius:14px}.guide{right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
-</head>
+<link rel="stylesheet" href="/css/edm-brand.css"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"></head>
 <body>
 
 <!-- ============ LOGIN ============ -->
@@ -445,7 +445,7 @@ body.no-guide .guide{display:none}
 <!-- ============ APP ============ -->
 <div class="shell" id="shell" hidden>
   <aside class="side" id="side">
-    <a class="brand" href="index.html"><b><svg viewBox="0 0 26 18" aria-hidden="true"><path fill="#fff" d="M6.5 18A6.5 6.5 0 0 1 5.3 5.1 7.5 7.5 0 0 1 19.6 4a7 7 0 0 1-.1 14z"/></svg>edilmen</b><small>L'edilizia trasparente, finalmente.</small></a>
+    <a class="brand" href="index.html"><b><img class="logo-img" src="/img/edilmen-logo-bianco.svg" alt="EdilMen" width="153" height="48"></b><small>L'edilizia trasparente, finalmente.</small></a>
     <div class="area-lbl" id="area-lbl"></div>
     <nav class="nav" id="nav" aria-label="Menu"></nav>
     <div class="side-foot">
@@ -556,7 +556,7 @@ const dist=(a,b)=>{const A=CITIES[a],B=CITIES[b];if(!A||!B)return 999;const R=63
 function tipInfo(t){for(const m of TAX)for(const a of m.areas)for(const [id,n] of a.tips)if(id===t){const r=TIPREF[id];return {id,name:n,area:a,macro:m,unit:r[0],q:r[1],base:r[2],days:r[3]}}return null}
 const allTips=()=>TAX.flatMap(m=>m.areas.flatMap(a=>a.tips.map(t=>t[0])));
 const areaOf=t=>t.split('.').slice(0,2).join('.');
-const TIP_COLOR={'1':'linear-gradient(135deg,#1447E6,#3B6CF7)','2':'linear-gradient(135deg,#E98A0C,#F5B820)','3':'linear-gradient(135deg,#6D3FD1,#9A6BF2)'};
+const TIP_COLOR={'1':'linear-gradient(135deg,#0077AA,#3B6CF7)','2':'linear-gradient(135deg,#E98A0C,#F5B820)','3':'linear-gradient(135deg,#6D3FD1,#9A6BF2)'};
 const unitLbl=u=>u==='mq'?'m²':u;
 
 /* ---------------- dati demo ---------------- */
@@ -570,9 +570,9 @@ const planPill=a=>{const k=planOf(a);return `<span class="pill ${k==='premium'?'
 const pill=(s,map)=>{const x=map[s]||[s,'gray'];return `<span class="pill ${x[1]}">${esc(x[0])}</span>`};
 function rng(s){return()=>{s=(s*16807)%2147483647;return (s-1)/2147483646}}
 const AZ_DEF=[
- ['a1','Edil Pro Srl','Trento',4.8,128,['1.1','1.2','1.3'],.92,5,'#1447E6'],
+ ['a1','Edil Pro Srl','Trento',4.8,128,['1.1','1.2','1.3'],.92,5,'#0077AA'],
  ['a2','Il Colle Costruzioni','Rovereto',4.6,96,['1.1','1.2'],1.0,5,'#18864B'],
- ['a3','Rinnovacasa Srl','Bolzano',4.5,74,['1.2','1.3'],1.06,5,'#0F37B8'],
+ ['a3','Rinnovacasa Srl','Bolzano',4.5,74,['1.2','1.3'],1.06,5,'#005F88'],
  ['a4','Edil Solution Srl','Pergine Valsugana',4.3,53,['1.2'],1.1,4.5,'#E9711C'],
  ['a5','Casa & Co. Srl','Mezzolombardo',4.2,41,['1.2','1.1'],1.18,4,'#4B5873'],
  ['a6','Sole Alpino Energia','Trento',4.7,88,['2.1','2.2','1.3'],.97,5,'#D68A00'],
@@ -662,8 +662,8 @@ const WON=['aggiudicata','cantiere','conclusa'];
 
 /* ---------------- sessione ---------------- */
 const ROLES={
-  admin:{name:'Luca Bazzanella',sub:'Amministrazione',lbl:'Area amministrazione',col:'#1447E6',home:'#/admin'},
-  azienda:{name:'Edil Pro Srl',sub:'Area azienda',lbl:'Area azienda',col:'#0F37B8',home:'#/azienda',az:'a1'},
+  admin:{name:'Luca Bazzanella',sub:'Amministrazione',lbl:'Area amministrazione',col:'#0077AA',home:'#/admin'},
+  azienda:{name:'Edil Pro Srl',sub:'Area azienda',lbl:'Area azienda',col:'#005F88',home:'#/azienda',az:'a1'},
   cliente:{name:'Giulia Rossi',sub:'Cliente',lbl:'Area cliente',col:'#E9711C',home:'#/cliente'}
 };
 let role=null;
@@ -1014,10 +1014,10 @@ function mapSvg(center,r,azs){
     ${Array.from({length:8},(_,i)=>`<path d="M0 ${i*30} L${W} ${i*30+12}" stroke="#E0E6EE" stroke-width="1"/>`).join('')}
     <path d="M${x(10.84)} ${y(45.9)} q-8 20 -2 44 q6 10 10 -8 q2 -20 -8 -36z" fill="#CFE0F2"/>
     <path d="M${x(11.12)} ${y(46.6)} C ${x(11.2)} ${y(46.3)}, ${x(11.1)} ${y(46.1)}, ${x(11.05)} ${y(45.85)} S ${x(11.0)} ${y(45.5)}, ${x(11.3)} ${y(45.35)}" stroke="#C4D8EE" stroke-width="3" fill="none"/>
-    ${r?`<ellipse cx="${x(C[1])}" cy="${y(C[0])}" rx="${r*pxKmX}" ry="${r*pxKmY}" fill="rgba(20,71,230,.12)" stroke="#1447E6" stroke-width="1.5"/>`:''}
+    ${r?`<ellipse cx="${x(C[1])}" cy="${y(C[0])}" rx="${r*pxKmX}" ry="${r*pxKmY}" fill="rgba(20,71,230,.12)" stroke="#0077AA" stroke-width="1.5"/>`:''}
     ${Object.entries(CITIES).map(([n,c])=>`<text x="${x(c[1])+6}" y="${y(c[0])+3}" font-size="8" fill="#7A8497" font-family="Figtree,sans-serif">${esc(n)}</text><circle cx="${x(c[1])}" cy="${y(c[0])}" r="2" fill="#A7B1C2"/>`).join('')}
-    ${pins.map(n=>{const c=CITIES[n];return `<g transform="translate(${x(c[1])-7} ${y(c[0])-19})"><path d="M7 0a7 7 0 0 1 7 7c0 5-7 12-7 12S0 12 0 7a7 7 0 0 1 7-7z" fill="#0F37B8"/><circle cx="7" cy="7" r="2.6" fill="#fff"/></g>`}).join('')}
-    <circle cx="${x(C[1])}" cy="${y(C[0])}" r="9" fill="#1447E6" stroke="#fff" stroke-width="2.5"/><path d="M${x(C[1])-3.5} ${y(C[0])+.5} l3.5 -3 l3.5 3 v3 h-7z" fill="#fff"/>
+    ${pins.map(n=>{const c=CITIES[n];return `<g transform="translate(${x(c[1])-7} ${y(c[0])-19})"><path d="M7 0a7 7 0 0 1 7 7c0 5-7 12-7 12S0 12 0 7a7 7 0 0 1 7-7z" fill="#005F88"/><circle cx="7" cy="7" r="2.6" fill="#fff"/></g>`}).join('')}
+    <circle cx="${x(C[1])}" cy="${y(C[0])}" r="9" fill="#0077AA" stroke="#fff" stroke-width="2.5"/><path d="M${x(C[1])-3.5} ${y(C[0])+.5} l3.5 -3 l3.5 3 v3 h-7z" fill="#fff"/>
   </svg></div>`;
 }
 

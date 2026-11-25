@@ -1,0 +1,31 @@
+/* EdilMen · marchio e palette blu → verde (26/11/2026)
+   Logo: img/edilmen-logo.svg (casa con spunta + scritta in sfumatura #0096D6 → #29A04E).
+   Colori pieni scuriti per il contrasto del testo bianco (AA): blu #0077AA, verde #1E8A43. */
+
+:root{
+  --brand-blu:#0096D6; --brand-verde:#29A04E;
+  --brand-grad:linear-gradient(90deg,#0096D6,#29A04E);
+}
+
+/* logo in testata e nel piè di pagina */
+.logo{gap:0;line-height:0}
+.logo .logo-img{display:block;height:38px;width:auto}
+.hdr .logo .logo-img{height:36px}
+.ftr .logo .logo-img{height:40px}
+.logo .logo-mark{display:block;height:24px;width:auto;margin-right:8px}
+@media (max-width:560px){.hdr .logo .logo-img{height:30px}}
+
+/* filo di marca sotto la testata quando si scorre */
+.hdr.edm-scrolled{border-image:var(--brand-grad) 1;border-bottom-width:2px}
+
+/* pulsante principale: verde pieno con un velo di sfumatura al passaggio */
+.btn-go,.hdr .btn-blue,.hero .btn-go,.hero .btn-blue,.barra .btn-go{background:#1E8A43}
+.btn-go:hover,.hdr .btn-blue:hover,.hero .btn-go:hover,.hero .btn-blue:hover,.barra .btn-go:hover{background:linear-gradient(90deg,#0077AA,#1E8A43)}
+
+/* selezione testo e focus coerenti */
+::selection{background:#CDEBF7;color:#0F1830}
+:focus-visible{outline-color:#0096D6}
+
+/* pulsante "Inizia la quotazione": sfumatura di marca, scurita per il testo bianco */
+.pick-via,.pick-via:hover{background:linear-gradient(90deg,#0077AA,#1E8A43);box-shadow:0 18px 34px -16px rgba(0,119,170,.6)}
+.pick-via:hover{filter:brightness(1.06)}

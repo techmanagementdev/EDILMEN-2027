@@ -4,7 +4,7 @@
 .btn-bianco{background:#fff;color:var(--ink)}
 .btn svg{width:18px;height:18px}
 /* testata */
-.pz-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:stretch;margin:0 -16px;padding:26px 16px 30px;background:linear-gradient(180deg,#EAF0FF 0,#F3F6FD 100%)}
+.pz-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:stretch;margin:0 -16px;padding:26px 16px 30px;background:linear-gradient(180deg,#E6F4FA 0,#F3F6FD 100%)}
 .pz-hero-el{grid-template-columns:1fr}
 .pz-hero .crumb{margin-bottom:10px}
 .pz-hero h1{font-family:var(--sans);font-weight:800;letter-spacing:-.03em;font-size:clamp(1.9rem,3.6vw,2.9rem);line-height:1.08;max-width:none}
@@ -166,7 +166,7 @@
 @media (max-width:640px){.pz-foto.senza{display:none}.pz-sez{padding:16px}.pz-hero-f.senza{min-height:150px}.pz-rif{width:100%}}
 
 /* Guida semplificata (15/10/2026, richiesta dell'utente: "solo visual pacchetti") */
-.pz-testa{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin:0 -16px;padding:26px 16px 22px;background:linear-gradient(180deg,#EAF0FF 0,#F3F6FD 100%)}
+.pz-testa{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin:0 -16px;padding:26px 16px 22px;background:linear-gradient(180deg,#E6F4FA 0,#F3F6FD 100%)}
 .pz-testa h1{font-family:var(--sans);font-weight:800;letter-spacing:-.03em;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.08;max-width:none}
 .pz-medio2{background:#fff;border-radius:16px;padding:14px 20px;box-shadow:0 16px 36px -22px rgba(16,32,74,.5);display:grid}
 .pz-medio2 span{font-weight:700;font-size:.9rem}.pz-medio2 b{font-size:1.9rem;color:var(--blue);line-height:1.15}.pz-medio2 small{color:var(--muted)}

@@ -46,10 +46,10 @@ function applica(c) {
 }
 
 var CSS = '#em-ck{position:fixed;z-index:2147483000;left:16px;bottom:16px;max-width:440px;background:#fff;color:#10204A;border:1px solid #E1E7F5;border-radius:16px;box-shadow:0 20px 50px -20px rgba(16,32,74,.45);padding:18px 18px 16px;font:15px/1.5 Figtree,system-ui,sans-serif}' +
-  '#em-ck h2{font:600 1.15rem/1.2 Newsreader,Georgia,serif;margin:0 28px 6px 0}#em-ck p{margin:0 0 12px;color:#3A4A73;font-size:.9rem}#em-ck a{color:#1447E6}' +
+  '#em-ck h2{font:600 1.15rem/1.2 Newsreader,Georgia,serif;margin:0 28px 6px 0}#em-ck p{margin:0 0 12px;color:#3A4A73;font-size:.9rem}#em-ck a{color:#0077AA}' +
   '#em-ck .x{position:absolute;top:10px;right:10px;width:32px;height:32px;border:0;background:none;font-size:22px;line-height:1;color:#63719A;cursor:pointer;border-radius:8px}' +
-  '#em-ck .b{display:flex;gap:8px;flex-wrap:wrap}#em-ck button.k{flex:1;min-width:110px;min-height:42px;border-radius:10px;font:600 .92rem Figtree,system-ui,sans-serif;cursor:pointer;border:1.5px solid #1447E6;background:#fff;color:#1447E6;padding:8px 12px}' +
-  '#em-ck button.k.p{background:#1447E6;color:#fff}#em-ck label{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;font-size:.9rem}#em-ck label input{margin-top:4px;width:auto}#em-ck label small{display:block;color:#63719A}' +
+  '#em-ck .b{display:flex;gap:8px;flex-wrap:wrap}#em-ck button.k{flex:1;min-width:110px;min-height:42px;border-radius:10px;font:600 .92rem Figtree,system-ui,sans-serif;cursor:pointer;border:1.5px solid #0077AA;background:#fff;color:#0077AA;padding:8px 12px}' +
+  '#em-ck button.k.p{background:#0077AA;color:#fff}#em-ck label{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;font-size:.9rem}#em-ck label input{margin-top:4px;width:auto}#em-ck label small{display:block;color:#63719A}' +
   '@media (max-width:520px){#em-ck{left:8px;right:8px;bottom:8px;max-width:none}}';
 
 function apri(dettaglio) {

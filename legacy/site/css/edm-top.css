@@ -8,7 +8,7 @@
   --ink:#131C35; --ink2:#454B5E; --muted:#5F6170;
   --line:rgba(19,28,53,.09); --line2:rgba(19,28,53,.16);
   --notte:#0F1830;
-  --orange:#C8460C; --orange-d:#A93A09;
+  --orange:#1E8A43; --orange-d:#176B34;
   --green:#1D7F48; --gold:#D99A16;
   --display:"Bricolage Grotesque","Figtree",ui-sans-serif,system-ui,sans-serif;
   --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
@@ -124,8 +124,8 @@ html.lenis.lenis-smooth{scroll-behavior:auto!important}
 /* React Bits · SpotlightCard: luce calda che segue il puntatore e accende il bordo */
 .edm-spot{position:relative;isolation:isolate}
 .edm-spot-l,.edm-spot-b{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0}
-.edm-spot-l{z-index:2;background:radial-gradient(260px circle at var(--sx,50%) var(--sy,50%),rgba(200,70,12,.09),transparent 70%)}
-.edm-spot-b{z-index:3;padding:1px;background:radial-gradient(180px circle at var(--sx,50%) var(--sy,50%),rgba(200,70,12,.55),transparent 70%);
+.edm-spot-l{z-index:2;background:radial-gradient(260px circle at var(--sx,50%) var(--sy,50%),rgba(30,138,67,.09),transparent 70%)}
+.edm-spot-b{z-index:3;padding:1px;background:radial-gradient(180px circle at var(--sx,50%) var(--sy,50%),rgba(30,138,67,.55),transparent 70%);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
 .lav img{transition:none}
 .lav:hover img{transform:none}

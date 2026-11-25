@@ -15,7 +15,7 @@ const CAPOLUOGO = { TN: 'Trento', BZ: 'Bolzano', VR: 'Verona', VI: 'Vicenza', PD
   UD: 'Udine', PN: 'Pordenone', GO: 'Trieste', TS: 'Trieste' };
 const PER_REGIONE = { taa: 'Trento', ven: 'Padova', fvg: 'Udine' };
 const citta = (comune, prov, reg) => (comune && A().CITIES[comune] ? comune : CAPOLUOGO[prov] || PER_REGIONE[reg] || 'Trento');
-const COLORI = ['#1447E6', '#0F37B8', '#E9711C', '#16A34A', '#7C3AED', '#0891B2', '#DB2777', '#CA8A04', '#5B6BD6', '#059669'];
+const COLORI = ['#0077AA', '#005F88', '#E9711C', '#16A34A', '#7C3AED', '#0891B2', '#DB2777', '#CA8A04', '#5B6BD6', '#059669'];
 const colore = id => COLORI[[...String(id)].reduce((s, c) => s + c.charCodeAt(0), 0) % COLORI.length];
 
 // stato della richiesta: quello della pagina (più dettagliato) sta in gestione.stato, la colonna lead.stato resta coerente

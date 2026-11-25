@@ -7,7 +7,7 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">
 <title>EdilMen: imprese edili con rating, prezzi e sopralluogo gratuito</title>
 <meta name="description" content="Ristrutturazione completa, rifacimento bagno e nuova costruzione in Trentino-Alto Adige, Veneto e Friuli: vedi subito il prezzo del pacchetto, imprese verificate con rating, sopralluogo gratis. Per gli altri lavori, scrivici o mandaci un vocale.">
-<meta name="theme-color" content="#1447E6">
+<meta name="theme-color" content="#0077AA">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <link rel="preload" as="image" href="/img/home-paesaggio.webp" fetchpriority="high">
 <link rel="canonical" href="https://www.edilmen.it/">
@@ -250,10 +250,10 @@
   color-scheme:light;
   --bg:#F3F6FD; --bg2:#E9EFFB; --surface:#FFFFFF; --ink:#10204A; --ink2:#3A4A73; --muted:#63719A;
   --line:#E1E7F5; --line2:#CBD5EC;
-  --blue:#1447E6; --blue-d:#0E36B5; --blue-soft:#EAF0FF; --blue-line:#A9BDF6;
+  --blue:#0077AA; --blue-d:#005F88; --blue-soft:#E6F4FA; --blue-line:#9ED3EA;
   --notte:#10204A;
-  --orange:#FF6A2B; --orange-d:#EB5716; --orange-soft:#FFEDE3;
-  --green:#1D7F48; --green-soft:#E1F4E8; --red:#B42318; --red-soft:#FDECE5;
+  --orange:#1E8A43; --orange-d:#176B34; --orange-soft:#E8F5EC;
+  --green:#1D7F48; --green-soft:#E1F4E8; --red:#B42318; --red-soft:#E8F5EC;
   --gold:#F2A516;
   --r-sm:10px; --r:14px; --r-lg:20px;
   --serif:"Newsreader", Georgia, "Times New Roman", serif;
@@ -301,7 +301,7 @@ input,select,textarea{font:inherit;color:inherit}
 .view{display:none}.view.on{display:block}
 
 /* ---------- HERO: rete e rating ---------- */
-.hero{background:linear-gradient(180deg,#EAF0FF 0,#F6F8FE 70%,#fff 100%);padding-block:26px 56px;overflow:hidden}
+.hero{background:linear-gradient(180deg,#E6F4FA 0,#F6F8FE 70%,#fff 100%);padding-block:26px 56px;overflow:hidden}
 .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start}
 /* la mappa parte alla stessa altezza del titolo (sotto la riga piccola sopra il titolo) */
 /* su schermo largo le due colonne sono un po' più strette e centrate: la scheda della quotazione si avvicina al centro (09/10/2026) */
@@ -613,7 +613,7 @@ input,select,textarea{font:inherit;color:inherit}
 .range3 b{display:block;font-size:1.1rem;font-variant-numeric:tabular-nums}
 .range3 .lo{border-color:#9ED7B5;background:var(--green-soft)}.range3 .lo b{color:var(--green)}
 .range3 .mid{border-color:var(--blue-line);background:var(--blue-soft)}.range3 .mid b{color:var(--blue);font-size:1.3rem}
-.range3 .hi{border-color:#F2C4B8;background:#FFF5F1}.range3 .hi b{color:var(--red)}
+.range3 .hi{border-color:#F2C4B8;background:#F2FAF4}.range3 .hi b{color:var(--red)}
 .imp{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:var(--r-lg);padding:16px;background:var(--surface);margin-top:10px}
 .imp.best{border-color:#9ED7B5}
 .imp.on{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
@@ -654,11 +654,11 @@ input,select,textarea{font:inherit;color:inherit}
 
 /* ---------- avvisi ---------- */
 .avviso{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:10px;align-items:flex-start;background:var(--notte);color:#fff;border-radius:14px;padding:12px 12px 12px 16px;width:min(460px,calc(100vw - 32px));box-shadow:0 20px 40px -16px rgba(0,0,0,.55);font-size:.95rem;line-height:1.45}
-.avviso[hidden]{display:none}.avviso b{color:#FFB48E;font-weight:600}.avviso a{color:#fff}
+.avviso[hidden]{display:none}.avviso b{color:#9FD8AE;font-weight:600}.avviso a{color:#fff}
 .avviso button{flex:none;margin-left:auto;color:#C6CCD8;font-size:1.2rem;width:32px;height:32px;border-radius:8px}
 .wz-open .avviso{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .spot{animation:spot 1.6s ease-out infinite}
-@keyframes spot{0%{box-shadow:0 0 0 0 rgba(255,106,43,.7)}70%{box-shadow:0 0 0 10px rgba(255,106,43,0)}100%{box-shadow:0 0 0 0 rgba(255,106,43,0)}}
+@keyframes spot{0%{box-shadow:0 0 0 0 rgba(30,138,67,.7)}70%{box-shadow:0 0 0 10px rgba(30,138,67,0)}100%{box-shadow:0 0 0 0 rgba(30,138,67,0)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 /* spot radio */
@@ -698,7 +698,7 @@ input,select,textarea{font:inherit;color:inherit}
 @media (max-width:520px){.tiles{gap:8px}.tile{padding:12px 4px}.tile .ic{width:46px;height:46px}.tile .ic svg{width:24px;height:24px}.tile b{font-size:.8rem}}
 /* vetrina */
 #vetrina h2{max-width:none}
-.r-taa{--rc:#1447E6;--rs:#EAF0FF}.r-ven{--rc:#1C7A45;--rs:#E7F5EC}.r-fvg{--rc:#E8551A;--rs:#FFEDE3}
+.r-taa{--rc:#0077AA;--rs:#E6F4FA}.r-ven{--rc:#1C7A45;--rs:#E7F5EC}.r-fvg{--rc:#1E8A43;--rs:#E8F5EC}
 .vt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px}
 @media (max-width:1000px){.vt{grid-template-columns:1fr}}
 .vt-col{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
@@ -714,7 +714,7 @@ input,select,textarea{font:inherit;color:inherit}
 .vt-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .vt-foto svg{width:42%;opacity:.55}
 .vt-cl{position:absolute;top:8px;right:8px;min-width:36px;padding:2px 8px;border-radius:8px;font-weight:800;text-align:center;color:#fff;background:#1C7A45}
-.vt-cl.c-ap{background:#14663A}.vt-cl.c-b{background:#C88A00}.vt-cl.c-c{background:#E8551A}.vt-cl.c-d{background:#B42318}
+.vt-cl.c-ap{background:#14663A}.vt-cl.c-b{background:#C88A00}.vt-cl.c-c{background:#1E8A43}.vt-cl.c-d{background:#B42318}
 .vt-corpo{position:relative;padding:24px 12px 12px;display:grid;gap:3px;align-content:start}
 .vt-mono{position:absolute;top:-22px;left:12px;width:44px;height:44px;border-radius:50%;background:#fff;border:1.5px solid var(--line);color:var(--rc);display:grid;place-items:center;font-weight:800;font-size:.95rem;object-fit:contain}
 .vt-nome{line-height:1.25;overflow-wrap:anywhere}
@@ -808,8 +808,8 @@ input,select,textarea{font:inherit;color:inherit}
 .pick-cat small{font-size:.86rem;line-height:1.35}
 .pick-cat .chev{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--notte);transition:transform .15s}
 .pick-cat button:hover .chev{transform:translate(3px,-50%)}
-.pick-via{display:flex;align-items:center;gap:14px;width:100%;margin-top:14px;min-height:68px;padding:10px 20px;border:0;border-radius:16px;background:linear-gradient(180deg,#FF7A3D,var(--orange));color:#fff;font:inherit;cursor:pointer;box-shadow:0 18px 34px -16px rgba(255,106,43,.95);transition:transform .12s,box-shadow .12s}
-.pick-via:hover{transform:translateY(-1px);box-shadow:0 22px 40px -16px rgba(255,106,43,1)}
+.pick-via{display:flex;align-items:center;gap:14px;width:100%;margin-top:14px;min-height:68px;padding:10px 20px;border:0;border-radius:16px;background:linear-gradient(180deg,#29A04E,var(--orange));color:#fff;font:inherit;cursor:pointer;box-shadow:0 18px 34px -16px rgba(30,138,67,.95);transition:transform .12s,box-shadow .12s}
+.pick-via:hover{transform:translateY(-1px);box-shadow:0 22px 40px -16px rgba(30,138,67,1)}
 .pick-via .pv-i{display:grid;place-items:center;flex:none}
 .pick-via .pv-t{flex:1;text-align:left;font-weight:800;font-size:1.3rem}
 .pick-via .pv-g{flex:none;border-left:1.5px solid rgba(255,255,255,.55);padding-left:16px;text-align:left;font-size:.86rem;line-height:1.3;font-weight:600}
@@ -950,18 +950,18 @@ input,select,textarea{font:inherit;color:inherit}
 .c3d-no .c3d-scena{display:none}.c3d-no .c3d-in{grid-template-columns:1fr}
 @media (max-width:860px){.c3d-in{grid-template-columns:1fr}.c3d-scena{order:-1;min-height:260px}}
 /* 20/11/2026: contrasto dei pulsanti arancioni (WCAG AA, testo grande) e spazio riservato per evitare spostamenti al caricamento */
-:root{--orange:#E4500F;--orange-d:#C8440C}
+:root{--orange:#1E8A43;--orange-d:#176B34}
 .btn-go,.pick-via .pv-t,#picker2 .btn-go,.search .btn-go{font-size:1.17rem;font-weight:800}
-.pick-via{background:linear-gradient(180deg,#EE5C1C,#E4500F)}
+.pick-via{background:linear-gradient(180deg,#EE5C1C,#1E8A43)}
 .mapsvg{aspect-ratio:540/479}
 </style>
 <link rel="stylesheet" href="/css/edm-top.css">
 <script>(function(d){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('edm-pre');setTimeout(function(){d.classList.remove('edm-pre')},1500)})(document.documentElement)</script>
-</head>
+<link rel="stylesheet" href="/css/edm-brand.css"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"></head>
 <body>
 <header class="hdr">
   <div class="wrap">
-    <a class="logo" href="#home" data-home aria-label="EdilMen, home"><svg viewBox="0 0 26 18" aria-hidden="true"><path fill="#1447E6" d="M6.5 18A6.5 6.5 0 0 1 5.3 5.1 7.5 7.5 0 0 1 19.6 4a7 7 0 0 1-.1 14z"/></svg>edilmen</a>
+    <a class="logo" href="#home" data-home aria-label="EdilMen, home"><img class="logo-img" src="/img/edilmen-logo.svg" alt="EdilMen" width="153" height="48"></a>
     <nav class="nav" aria-label="Principale">
       <a href="#rating" data-scroll="rating">Il rating</a>
       <a href="/imprese">Imprese</a>
@@ -1245,7 +1245,7 @@ input,select,textarea{font:inherit;color:inherit}
 
   <footer class="ftr">
     <div class="wrap">
-      <div><span class="logo"><svg viewBox="0 0 26 18" aria-hidden="true"><path fill="#fff" d="M6.5 18A6.5 6.5 0 0 1 5.3 5.1 7.5 7.5 0 0 1 19.6 4a7 7 0 0 1-.1 14z"/></svg>edilmen</span>
+      <div><span class="logo"><img class="logo-img" src="/img/edilmen-logo-bianco.svg" alt="EdilMen" width="153" height="48"></span>
         <p>La rete di imprese edili con il rating, in Trentino-Alto Adige, Veneto e Friuli-Venezia Giulia.</p>
         <p style="font-size:.78rem;opacity:.7;margin-top:10px">Confini regionali: ISTAT, tramite openpolis/geojson-italy (CC BY 4.0).</p><p style="font-size:.78rem;opacity:.7;margin-top:6px">European Management Institute S.r.l. (business unit EdilMen), Via dei Solteri 74, 38121 Trento, C.F. e P.IVA 02604960225, PEC emi@pec.decaminada.it</p></div>
       <div class="cols">

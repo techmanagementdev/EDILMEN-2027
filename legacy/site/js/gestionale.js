@@ -475,7 +475,7 @@ caricaProfilo().then(() => {
 
 /* stile del login e dei dettagli */
 const st = document.createElement('style');
-st.textContent = `.gs-form{display:grid;gap:12px;margin-top:18px;max-width:380px}.gs-form .fld span{font-weight:600}.gs-msg{background:#FDECE5;color:#B42318;border-radius:10px;padding:10px 12px;font-weight:600}
+st.textContent = `.gs-form{display:grid;gap:12px;margin-top:18px;max-width:380px}.gs-form .fld span{font-weight:600}.gs-msg{background:#E8F5EC;color:#B42318;border-radius:10px;padding:10px 12px;font-weight:600}
 .gs-demo{margin-top:6px}.gs-azioni{display:flex;gap:8px;flex-wrap:wrap}.gs-foto{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:12px}
 .gs-foto img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)}.gs-dash{margin:0 0 18px}.gs-dash-b{display:flex;gap:26px;flex-wrap:wrap;align-items:baseline}
 .gs-dash-b b{font-size:1.5rem;margin-right:4px}`;

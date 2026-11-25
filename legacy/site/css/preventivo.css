@@ -72,7 +72,7 @@ input[type=range]#pv-num{width:100%;margin-top:28px;accent-color:var(--blue);hei
 .vc-centro{text-align:center;margin-top:8px}
 .vc-sez{margin-top:22px;background:var(--bg);border-radius:var(--r-lg);padding:22px 18px}
 .vc-rec{display:flex;align-items:center;gap:18px}
-.vc-mic{width:84px;height:84px;flex:none;border-radius:50%;border:0;background:var(--orange);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 22px rgba(255,106,43,.35)}
+.vc-mic{width:84px;height:84px;flex:none;border-radius:50%;border:0;background:var(--orange);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 22px rgba(30,138,67,.35)}
 .vc-mic:hover{background:var(--orange-d)}
 .vc-mic.on{background:var(--red);animation:vcPulse 1.4s ease-out infinite}
 .vc-quad{width:26px;height:26px;border-radius:5px;background:#fff}
@@ -156,12 +156,12 @@ input[type=range]#pv-num{width:100%;margin-top:28px;accent-color:var(--blue);hei
 /* attesa prima delle offerte: nuvola che gira, barra che si riempie, conto alla rovescia */
 .pv-attesa{max-width:520px;margin:0 auto;padding:48px 20px 60px;text-align:center}
 .pa-nuvola{width:120px;height:120px;margin:0 auto 22px;border-radius:50%;display:grid;place-items:center;background:#EEF3FF;animation:pa-pulsa 1.2s ease-in-out infinite}
-.pa-nuvola svg{width:68px;height:47px;fill:#1447E6;animation:pa-gira 1.6s cubic-bezier(.6,.1,.4,.9) infinite}
+.pa-nuvola svg{width:68px;height:47px;fill:#0077AA;animation:pa-gira 1.6s cubic-bezier(.6,.1,.4,.9) infinite}
 @keyframes pa-gira{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(.85)}100%{transform:rotate(360deg) scale(1)}}
 @keyframes pa-pulsa{0%,100%{box-shadow:0 0 0 0 rgba(20,71,230,.25)}50%{box-shadow:0 0 0 18px rgba(20,71,230,0)}}
 .pv-attesa h1{font-family:Newsreader,serif;font-weight:600;font-size:1.7rem;line-height:1.15;margin:0 0 18px;color:#10204A}
 .pa-barra{height:12px;border-radius:999px;background:#E6EBF7;overflow:hidden}
-.pa-barra i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#1447E6,#FF6A2B)}
+.pa-barra i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#0077AA,#1E8A43)}
 .pa-conto{margin:10px 0 18px;font-weight:700;color:#10204A;font-variant-numeric:tabular-nums}
 .pa-passi{list-style:none;padding:0;margin:0 auto;display:grid;gap:10px;text-align:left;max-width:380px}
 .pa-passi li{display:flex;gap:10px;align-items:center;color:#8A96B5;transition:color .3s}
@@ -170,7 +170,7 @@ input[type=range]#pv-num{width:100%;margin-top:28px;accent-color:var(--blue);hei
 @media (prefers-reduced-motion:reduce){.pa-nuvola,.pa-nuvola svg{animation:none}}
 
 /* Quotazione digitale e vecchia scuola (20/11/2026) */
-.pv-modi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 22px;padding:5px;border-radius:calc(var(--r) + 4px);background:linear-gradient(135deg,rgba(20,71,230,.08),rgba(255,106,43,.08));border:1px solid var(--line)}
+.pv-modi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 22px;padding:5px;border-radius:calc(var(--r) + 4px);background:linear-gradient(135deg,rgba(20,71,230,.08),rgba(30,138,67,.08));border:1px solid var(--line)}
 .pv-modo{display:flex;gap:10px;align-items:flex-start;text-align:left;padding:12px 14px;border:0;border-radius:var(--r);background:transparent;font:inherit;color:inherit;cursor:pointer;transition:background .15s,box-shadow .15s}
 .pv-modo .emo{font-size:1.4rem;line-height:1}
 .pv-modo b{display:block;font-size:.98rem}
@@ -178,7 +178,7 @@ input[type=range]#pv-num{width:100%;margin-top:28px;accent-color:var(--blue);hei
 .pv-modo.on{background:var(--surface);box-shadow:0 6px 18px -10px rgba(16,32,74,.45)}
 .pv-modo:not(.on):hover{background:rgba(255,255,255,.6)}
 .pv-badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--green-soft,#E1F4E8);color:var(--green,#1D7F48);font-size:.72rem;font-weight:800;letter-spacing:.02em;vertical-align:2px}
-.pv-badge.vs{background:var(--orange-soft,#FFEDE3);color:var(--orange-d,#EB5716)}
+.pv-badge.vs{background:var(--orange-soft,#E8F5EC);color:var(--orange-d,#176B34)}
 .vc-tipi{margin-top:10px}
 .vc-tipi .pv-chip{min-height:42px;padding:0 14px;font-weight:600}
 .vc .vc-area{min-height:130px}

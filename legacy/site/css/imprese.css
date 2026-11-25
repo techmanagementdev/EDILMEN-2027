@@ -1,6 +1,6 @@
 /* Catalogo imprese, schede pubbliche, metodo del rating, rivendicazione. Direzione "Comparatore". */
-:root{color-scheme:light;--bg:#F3F6FD;--surface:#fff;--ink:#10204A;--ink2:#2A3350;--muted:#5E6782;--line:#E1E6F1;--blue:#1447E6;--blue-d:#0F37B8;--blue-soft:#EAF0FF;
-  --orange:#FF6A2B;--orange-d:#E8551A;--green:#1C7A45;--green-soft:#E7F5EC;--gold:#C88A00;--warn-soft:#FFF4E5;
+:root{color-scheme:light;--bg:#F3F6FD;--surface:#fff;--ink:#10204A;--ink2:#2A3350;--muted:#5E6782;--line:#E1E6F1;--blue:#0077AA;--blue-d:#005F88;--blue-soft:#E6F4FA;
+  --orange:#1E8A43;--orange-d:#1E8A43;--green:#1C7A45;--green-soft:#E7F5EC;--gold:#C88A00;--warn-soft:#FFF4E5;
   --serif:"Newsreader",Georgia,serif;--sans:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -134,7 +134,7 @@ table.pacchetti td:last-child{white-space:nowrap}
 .chip{display:inline-flex;align-items:center;min-height:42px;padding:8px 18px;border:1.5px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;font-weight:600}
 .chip:hover{border-color:var(--blue)}.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
 .chip-sel select{min-height:42px;border-radius:999px;width:auto;padding:8px 14px;font-weight:600}
-.r-taa{--rc:#1447E6;--rs:#EAF0FF}.r-ven{--rc:#1C7A45;--rs:#E7F5EC}.r-fvg{--rc:#E8551A;--rs:#FFEDE3}
+.r-taa{--rc:#0077AA;--rs:#E6F4FA}.r-ven{--rc:#1C7A45;--rs:#E7F5EC}.r-fvg{--rc:#1E8A43;--rs:#E8F5EC}
 .colonne{display:grid;gap:16px;margin-top:24px;grid-template-columns:repeat(3,1fr)}
 .colonne.n1{grid-template-columns:1fr}.colonne.n1 .carte{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
 @media (max-width:1000px){.colonne{grid-template-columns:1fr}}
@@ -151,7 +151,7 @@ table.pacchetti td:last-child{white-space:nowrap}
 .carta .foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .carta .foto svg{width:42%;opacity:.55}
 .classe{position:absolute;top:8px;right:8px;min-width:38px;padding:3px 8px;border-radius:8px;font-weight:800;font-size:1.05rem;text-align:center;color:#fff;background:#1C7A45}
-.classe.c-ap{background:#14663A}.classe.c-b{background:#C88A00}.classe.c-c{background:#E8551A}.classe.c-d{background:#B42318}
+.classe.c-ap{background:#14663A}.classe.c-b{background:#C88A00}.classe.c-c{background:#1E8A43}.classe.c-d{background:#B42318}
 .carta .corpo{position:relative;padding:22px 12px 12px;display:grid;gap:6px}
 .mono{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#fff;border:1.5px solid var(--line);color:var(--rc,var(--blue));font-weight:800;font-size:.95rem}
 .carta .mono{position:absolute;top:-22px;left:12px;width:44px;height:44px}

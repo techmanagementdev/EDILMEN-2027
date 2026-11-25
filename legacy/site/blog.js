@@ -80,5 +80,5 @@ window.EM_BLOG={CATS:CATS,all:all,published:function(){return all().filter(funct
   ICON:{bonus:'M20 12l-8 8-9-9V3h8zM7.5 7.5h.01',prezzi:'M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9',guide:'M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h6',energia:'M13 2 4 14h7l-1 8 9-12h-7z',territorio:'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z'},
   IMG:{bonus:'/img/blog/bonus.jpg',prezzi:'/img/blog/prezzi.jpg',guide:'/img/blog/guide.jpg',energia:'/img/blog/energia.jpg',territorio:'/img/blog/territorio.jpg'},
   cover:function(p){return p.img||this.IMG[p.cat]||this.IMG.guide},
-  GRAD:{bonus:'linear-gradient(135deg,#1447E6,#5B82F5)',prezzi:'linear-gradient(135deg,#FF6A2B,#FFA26B)',guide:'linear-gradient(135deg,#0E1422,#3A4460)',energia:'linear-gradient(135deg,#1F8A4C,#5CC489)',territorio:'linear-gradient(135deg,#6D3FD1,#A07CF2)'}};
+  GRAD:{bonus:'linear-gradient(135deg,#0077AA,#5B82F5)',prezzi:'linear-gradient(135deg,#1E8A43,#FFA26B)',guide:'linear-gradient(135deg,#0E1422,#3A4460)',energia:'linear-gradient(135deg,#1F8A4C,#5CC489)',territorio:'linear-gradient(135deg,#6D3FD1,#A07CF2)'}};
 })();
