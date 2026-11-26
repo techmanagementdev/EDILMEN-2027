@@ -140,3 +140,10 @@ input::placeholder,textarea::placeholder{color:#8a99b8;opacity:1}
 @keyframes fx-gancio{0%,100%{transform:translate(0,0)}40%{transform:translate(-40px,26px)}60%{transform:translate(-40px,26px)}}
 @media (max-width:900px){.fx-cantiere{padding-bottom:180px}.fx-villa{top:auto;bottom:8px;transform:none;right:50%;margin-right:-160px;width:320px}}
 @media (prefers-reduced-motion:reduce){.fx-villa *{animation:none!important;stroke-dashoffset:0!important;opacity:1!important}}
+
+/* riquadro blu delle aperture: bordi arrotondati, respiro interno, filo luminoso (26/11/2026) */
+.fx-apertura{border-radius:24px!important;padding:clamp(26px,3.4vw,44px) clamp(22px,3.4vw,44px)!important;border:1px solid rgba(51,198,244,.28)!important;box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 24px 60px -30px rgba(4,10,24,.75),0 0 40px -14px rgba(0,150,214,.45)!important;margin-top:18px}
+@media (min-width:901px){.fx-apertura.fx-cantiere{padding-right:min(44%,460px)!important}}
+@media (max-width:900px){.fx-apertura.fx-cantiere{padding-bottom:190px!important}}
+.fx-apertura li,.fx-apertura span:not([class*=h-]),.fx-apertura small,.fx-apertura div:not(.btn){color:#C9D6EE}
+.fx-apertura h1 span[class]{color:inherit}
