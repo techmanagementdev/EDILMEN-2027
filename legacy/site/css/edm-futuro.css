@@ -113,3 +113,8 @@
 #picker.fx-aperto .pick-modo{margin-bottom:14px}
 #picker.fx-aperto .pm{min-height:0}
 @media (max-width:640px){#picker:not(.fx-aperto) .pm{min-height:128px;padding:14px}#picker:not(.fx-aperto) .pm .pm-e{font-size:2.1rem}#picker:not(.fx-aperto) .pm b{font-size:1.05rem}}
+
+/* tema chiaro sempre: i campi dei moduli non diventano scuri con il tema scuro del dispositivo */
+:root{color-scheme:light}
+input:not([type=checkbox]):not([type=radio]),textarea,select{background-color:#fff;color:#10204A}
+input::placeholder,textarea::placeholder{color:#8a99b8;opacity:1}
