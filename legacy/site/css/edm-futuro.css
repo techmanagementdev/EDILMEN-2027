@@ -147,3 +147,25 @@ input::placeholder,textarea::placeholder{color:#8a99b8;opacity:1}
 @media (max-width:900px){.fx-apertura.fx-cantiere{padding-bottom:190px!important}}
 .fx-apertura li,.fx-apertura span:not([class*=h-]),.fx-apertura small,.fx-apertura div:not(.btn){color:#C9D6EE}
 .fx-apertura h1 span[class]{color:inherit}
+
+/* scelta iniziale v3 (26/11/2026): niente cornice bianca, due pulsanti pieni da cliccare */
+.pick-scegli{display:none}
+#picker:not(.fx-aperto){background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin-top:22px!important}
+#picker:not(.fx-aperto) .pick-scegli{display:block;margin:0 0 10px;font-weight:700;font-size:1.05rem;color:#10204A}
+#picker:not(.fx-aperto) .pm{position:relative;border:0!important;color:#fff!important;min-height:168px;padding:20px 20px 18px;border-radius:20px;box-shadow:0 18px 40px -18px rgba(16,32,74,.55);transition:transform .18s,box-shadow .18s}
+#picker:not(.fx-aperto) .pm-voc{background:linear-gradient(140deg,#1E8A43,#2FAE5A)}
+#picker:not(.fx-aperto) .pm-gui{background:linear-gradient(140deg,#0077AA,#0096D6)}
+#picker:not(.fx-aperto) .pm b,#picker:not(.fx-aperto) .pm small{color:#fff!important}
+#picker:not(.fx-aperto) .pm small{opacity:.92;font-weight:600}
+#picker:not(.fx-aperto) .pm .pm-e{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.18);font-size:1.9rem!important}
+#picker:not(.fx-aperto) .pm:hover{transform:translateY(-3px);box-shadow:0 24px 50px -18px rgba(16,32,74,.65)}
+#picker:not(.fx-aperto) .pm:focus-visible{outline:3px solid #FFD166;outline-offset:3px}
+.pm-go{display:none}
+#picker:not(.fx-aperto) .pm-go{display:inline-flex;align-items:center;margin-top:auto;padding:7px 14px;border-radius:999px;background:#fff;font-weight:800;font-size:.92rem}
+#picker:not(.fx-aperto) .pm-voc .pm-go{color:#1E8A43}
+#picker:not(.fx-aperto) .pm-gui .pm-go{color:#0077AA}
+#picker:not(.fx-aperto) .pm::after{content:"";position:absolute;inset:-4px;border-radius:24px;border:2px solid rgba(41,160,78,.0);animation:fx-chiama 2.4s ease-out infinite;pointer-events:none}
+#picker:not(.fx-aperto) .pm-gui::after{animation-delay:1.2s}
+@keyframes fx-chiama{0%{border-color:rgba(0,150,214,.55);transform:scale(.98)}70%,100%{border-color:rgba(0,150,214,0);transform:scale(1.04)}}
+@media (max-width:640px){#picker:not(.fx-aperto) .pm{min-height:150px;padding:14px}#picker:not(.fx-aperto) .pm .pm-e{width:44px;height:44px;font-size:1.5rem!important}#picker:not(.fx-aperto) .pm-go{font-size:.85rem;padding:6px 12px}}
+@media (prefers-reduced-motion:reduce){#picker .pm::after{animation:none!important}}

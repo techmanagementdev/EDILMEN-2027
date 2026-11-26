@@ -957,7 +957,7 @@ input,select,textarea{font:inherit;color:inherit}
 </style>
 <link rel="stylesheet" href="/css/edm-top.css?v=3">
 <script>(function(d){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('edm-pre');setTimeout(function(){d.classList.remove('edm-pre')},1500)})(document.documentElement)</script>
-<link rel="stylesheet" href="/css/edm-brand.css?v=7"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"><link rel="stylesheet" href="/css/edm-futuro.css?v=11"><script src="/js/edm-futuro.js?v=6" defer></script></head>
+<link rel="stylesheet" href="/css/edm-brand.css?v=7"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"><link rel="stylesheet" href="/css/edm-futuro.css?v=12"><script src="/js/edm-futuro.js?v=6" defer></script></head>
 <body>
 <header class="hdr">
   <div class="wrap">
@@ -982,9 +982,10 @@ input,select,textarea{font:inherit;color:inherit}
         <p class="lead">Confrontiamo aziende edili verificate della tua zona. In pochi minuti, il preventivo giusto.</p>
         <form class="pick" id="picker" aria-label="Calcola il prezzo del tuo lavoro">
           <div class="pick-passo" id="pick-1">
+            <p class="pick-scegli">Scegli come iniziare <span aria-hidden="true">👇</span></p>
             <div class="pick-modo" role="group" aria-label="Come preferisci chiedere il prezzo">
-              <button type="button" class="pm pm-voc" data-vocale><span class="pm-e" aria-hidden="true">🎙️</span><span><b>Mandaci un vocale</b><small>Quotazione entro 60 minuti</small></span></button>
-              <button type="button" class="pm pm-gui on" id="pm-gui" aria-pressed="true"><span class="pm-e" aria-hidden="true">🧭</span><span><b>Procedura guidata</b><small>Prezzo subito, in 2 minuti</small></span></button>
+              <button type="button" class="pm pm-voc" data-vocale><span class="pm-e" aria-hidden="true">🎙️</span><span><b>Mandaci un vocale</b><small>Quotazione entro 60 minuti</small></span><span class="pm-go" aria-hidden="true">Inizia →</span></button>
+              <button type="button" class="pm pm-gui on" id="pm-gui" aria-pressed="true"><span class="pm-e" aria-hidden="true">🧭</span><span><b>Procedura guidata</b><small>Prezzo subito, in 2 minuti</small></span><span class="pm-go" aria-hidden="true">Inizia →</span></button>
             </div>
             <p class="pick-t" id="pick-t1"><span class="pick-n">1</span>Che lavoro devi fare?</p>
             <div class="pick-cat" id="pick-cat" role="group" aria-labelledby="pick-t1"><button type="button" data-cat="completa"><span class="ic" aria-hidden="true">🏠</span><span class="tx"><b>Ristrutturazione completa</b><small>Tutta la casa, chiavi in mano</small></span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button><button type="button" data-cat="bagno"><span class="ic" aria-hidden="true">🛁</span><span class="tx"><b>Rifacimento bagno</b><small>Bagno nuovo chiavi in mano</small></span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button><button type="button" data-cat="nuova"><span class="ic" aria-hidden="true">🏗️</span><span class="tx"><b>Nuova costruzione</b><small>Dal progetto alla consegna</small></span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button><button type="button" data-cat="vecchia"><span class="ic" aria-hidden="true">🔧</span><span class="tx"><b>Un altro lavoro</b><small>Cucina, tetto, impianti, fotovoltaico</small></span><svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button></div>
