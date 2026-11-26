@@ -84,3 +84,17 @@
 /* menu unico (26/11/2026): pagina corrente evidenziata, "Sei un'impresa?" come voce secondaria */
 .hdr nav a[aria-current="page"]{color:var(--ink,#10204A);font-weight:600;box-shadow:inset 0 -2px 0 #29A04E}
 .hdr nav a[href="/aziende"]{color:#0077AA;font-weight:600}
+
+/* prima schermata v2 (26/11/2026): titolo più grande, schede più piccole con emoji */
+@media (min-width:981px){.hero h1{font-size:clamp(2.4rem,3.7vw,3.4rem);line-height:1.03}}
+@media (min-width:981px) and (max-height:700px){.hero h1{font-size:clamp(2.2rem,3.3vw,3rem)}}
+.pick-cat .ic{font-size:1.55rem;line-height:1;background:#F1F6FA}
+.pick-cat:not(.sub) button{min-height:60px;padding:8px 30px 8px 10px;gap:10px}
+.pick-cat:not(.sub) button .ic{width:40px;height:40px}
+.pick-cat small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick-via{min-height:50px}
+@media (max-width:640px){
+  .hero h1{font-size:clamp(1.95rem,8vw,2.5rem)}
+  .pick-cat:not(.sub) button{flex-direction:row;align-items:center;padding:10px;gap:8px;min-height:56px}
+  .pick-cat .ic{width:34px;height:34px;font-size:1.3rem}
+}
