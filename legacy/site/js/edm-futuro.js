@@ -62,6 +62,43 @@
     if (!calmo) requestAnimationFrame(ciclo);
   }
 
+
+  /* ---------- villa in costruzione: progetto che si disegna, vetrate che si accendono, gru che lavora ---------- */
+  var VILLA = '<svg class="fx-villa" viewBox="0 0 440 270" aria-hidden="true" focusable="false">' +
+    '<defs><linearGradient id="fxg" x1="0" x2="1"><stop offset="0" stop-color="#33C6F4"/><stop offset="1" stop-color="#4FD88A"/></linearGradient>' +
+    '<pattern id="fxp" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="rgba(120,190,255,.10)" stroke-width="1"/></pattern></defs>' +
+    '<rect x="0" y="0" width="440" height="270" fill="url(#fxp)"/>' +
+    // terreno e quote
+    '<path class="d d1" pathLength="1" d="M10 232H430"/>' +
+    '<path class="d d1 q" pathLength="1" d="M40 250H300M40 245V255M300 245V255"/>' +
+    '<text class="t" x="150" y="264">12,40 m</text>' +
+    // fondazioni
+    '<path class="d d2" pathLength="1" d="M36 232V222H304V232"/>' +
+    // piano terra
+    '<path class="d d3" pathLength="1" d="M44 222V140H296V222"/>' +
+    // piano a sbalzo
+    '<path class="d d4" pathLength="1" d="M120 140V78H340V140H296"/>' +
+    // tetto piano con aggetto
+    '<path class="d d5" pathLength="1" d="M108 78H352M30 140H120"/>' +
+    // vetrate
+    '<rect class="w w1" x="60" y="156" width="70" height="56" rx="2"/><rect class="w w2" x="142" y="156" width="40" height="66" rx="2"/>' +
+    '<rect class="w w3" x="198" y="156" width="82" height="56" rx="2"/><rect class="w w4" x="140" y="92" width="120" height="36" rx="2"/><rect class="w w5" x="272" y="92" width="54" height="36" rx="2"/>' +
+    // rivestimento in legno
+    '<path class="d d6" pathLength="1" d="M44 150H120M44 160H120M44 170H120"/>' +
+    // alberi
+    '<path class="d d6" pathLength="1" d="M392 232V196M392 180l-14 22h28zM392 166l-11 18h22z"/>' +
+    // gru
+    '<g class="gru"><path class="d d1" pathLength="1" d="M370 232V22M362 232h16M370 30H230M370 30h44M370 22l-30 8M370 22l40 8"/>' +
+    '<rect class="cw" x="404" y="30" width="12" height="12"/>' +
+    '<g class="gancio"><path class="cavo" d="M262 30V70"/><rect class="pacco" x="250" y="70" width="24" height="14" rx="2"/></g></g>' +
+    '</svg>';
+
+  function villa(box) {
+    if (box.querySelector('.fx-villa')) return;
+    box.insertAdjacentHTML('afterbegin', VILLA);
+    box.classList.add('fx-cantiere');
+  }
+
   pronto(function () {
     // barra di avanzamento
     var bar = d.createElement('div'); bar.className = 'fx-progress'; d.body.appendChild(bar);
@@ -78,7 +115,7 @@
         var b = h1.parentElement;
         while (b && b.parentElement && b.parentElement.tagName !== 'MAIN' && b.parentElement !== d.body && b.offsetHeight < 140) b = b.parentElement;
         if (b && b.tagName !== 'MAIN' && b.offsetHeight > 120 && b.offsetHeight < 560 && b.querySelectorAll('form,table,input').length === 0 && b.querySelectorAll('button').length < 3 && b.querySelectorAll('img,picture,video').length === 0 && getComputedStyle(b).backgroundImage === 'none') {
-          b.classList.add('fx-apertura'); portale(b, { x: 0.82, y: 0.5, r: 0.5 });
+          b.classList.add('fx-apertura'); villa(b);
         }
       }
     }
