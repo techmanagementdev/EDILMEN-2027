@@ -1,0 +1,95 @@
+/* EdilMen · strato "futuro" (26/11/2026): portale al neon, vortice animato, vetro e luci.
+   Ispirazione: anello luminoso e vortice blu, pulsanti a pillola in vetro. Colori di marca blu #0096D6 → verde #29A04E.
+   Tutto si spegne con "riduci movimento". */
+:root{--fx-blu:#0096D6;--fx-ciano:#33C6F4;--fx-verde:#29A04E;--fx-notte:#040A18;--fx-notte2:#0A1630}
+
+/* testata in vetro scuro con filo al neon */
+.hdr{background:rgba(4,10,24,.78)!important;backdrop-filter:saturate(1.6) blur(16px)!important;-webkit-backdrop-filter:saturate(1.6) blur(16px)!important;border-bottom:1px solid rgba(51,198,244,.18)!important}
+.hdr::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--fx-ciano),var(--fx-verde),transparent);opacity:.7}
+.hdr nav a{color:#C9D6EE!important}
+.hdr nav a:hover{color:#fff!important;background:rgba(255,255,255,.07)!important}
+.hdr nav a[aria-current="page"]{color:#fff!important;box-shadow:inset 0 -2px 0 var(--fx-verde)!important}
+.hdr nav a[href="/aziende"]{color:var(--fx-ciano)!important}
+.hdr .logo-img,.hdr .logo img{content:url(/img/edilmen-logo-bianco.svg)}
+.mn-btn{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.18)!important;color:#fff!important}
+.hdr.mn-aperto nav{background:#071226!important;border-color:rgba(51,198,244,.2)!important}
+.hdr.mn-aperto nav a{color:#E6EEFB!important;border-color:rgba(255,255,255,.08)!important}
+
+/* pulsanti principali: pillola con bagliore e riflesso che scorre */
+.btn-go,.btn-blue,.btn-cta,.pick-via,.hdr .btn{position:relative;overflow:hidden;border-radius:999px!important;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 8px 28px -10px rgba(0,150,214,.75),0 0 22px -6px rgba(41,160,78,.6)!important}
+.btn-go::after,.btn-blue::after,.btn-cta::after,.pick-via::after,.hdr .btn::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:30%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:fx-luce 4.5s ease-in-out infinite;pointer-events:none}
+@keyframes fx-luce{0%,60%{left:-40%}100%{left:130%}}
+
+/* barra di avanzamento della pagina */
+.fx-progress{position:fixed;top:0;left:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--fx-blu),var(--fx-verde));box-shadow:0 0 12px var(--fx-ciano);z-index:2147482500;pointer-events:none}
+
+/* comparsa al passaggio */
+.fx-in{opacity:0;transform:translateY(22px) scale(.985);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+.fx-in.fx-on{opacity:1;transform:none}
+
+/* schede con luce che segue il puntatore */
+.fx-spot{position:relative;isolation:isolate}
+.fx-spot::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;transition:opacity .25s;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(51,198,244,.16),rgba(41,160,78,.08) 40%,transparent 65%)}
+.fx-spot:hover::before{opacity:1}
+.fx-spot:hover{border-color:rgba(0,150,214,.45)!important}
+
+/* ===== HOME: il portale ===== */
+.hero.fx-portale{background:radial-gradient(1200px 700px at 72% 45%,#0B2150 0,var(--fx-notte2) 45%,var(--fx-notte) 100%)!important;color:#fff}
+.hero.fx-portale .hero-foto{opacity:.16!important;mix-blend-mode:screen;filter:saturate(.6) hue-rotate(10deg)}
+.hero.fx-portale .hero-foto::after{display:none!important}
+.fx-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.hero.fx-portale .hero-grid{position:relative;z-index:1}
+.hero.fx-portale .kick{color:#9FC7E8!important}
+.hero.fx-portale h1,.hero.fx-portale h1 .h-blu,.hero.fx-portale h1 .h-ara{color:#fff!important}
+.hero.fx-portale h1 .h-blu,.hero.fx-portale h1 .h-blu *{color:#5AD2FF!important;text-shadow:0 0 24px rgba(51,198,244,.55)}
+.hero.fx-portale .edm-tratto path{stroke:#4FD88A!important;filter:drop-shadow(0 0 6px #29A04E)}
+.hero.fx-portale .punti,.hero.fx-portale .punti li{color:#C9D6EE!important}
+.hero.fx-portale .net{color:#C9D6EE!important;border-left-color:var(--fx-verde)!important}
+.hero.fx-portale .pick{background:rgba(255,255,255,.96)!important;border:1px solid rgba(51,198,244,.35)!important;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 30px 80px -30px rgba(0,0,0,.8),0 0 60px -10px rgba(0,150,214,.55)!important}
+.hero.fx-portale .pick,.hero.fx-portale .pick .pick-t,.hero.fx-portale .pick-cat b,.hero.fx-portale .pick-cat button{color:#10204A!important}
+.hero.fx-portale .pick-cat small{color:#5E6782!important}
+.hero.fx-portale .pick .pick-via,.hero.fx-portale .pick .pick-via *{color:#fff!important}
+.hero.fx-portale .mapsvg .lbl,.hero.fx-portale .mapsvg text{stroke-width:.6px!important;paint-order:stroke}
+.hero.fx-portale .mapcard{background:transparent!important;border:0!important;box-shadow:none!important}
+.hero.fx-portale .mapsvg{background:transparent!important}
+.hero.fx-portale .mapsvg .m-terra,.hero.fx-portale .mapsvg .m-vicina{fill:rgba(255,255,255,.04)!important;stroke:rgba(255,255,255,.08)!important}
+.hero.fx-portale .mapsvg .m-mare{fill:rgba(0,150,214,.10)!important}
+.hero.fx-portale .mapsvg .reg{fill:rgba(10,30,70,.55)!important;stroke:#5AD2FF!important;stroke-width:1.4!important;filter:drop-shadow(0 0 6px rgba(51,198,244,.55))}
+.hero.fx-portale .mapsvg [data-reg]:hover .reg,.hero.fx-portale .mapsvg .reg.on{fill:rgba(41,160,78,.28)!important;stroke:#4FD88A!important}
+.hero.fx-portale .mapsvg .lbl{fill:#fff!important;stroke:#071226!important}
+.hero.fx-portale .mapsvg .citta circle{fill:#9FE3FF!important}
+.hero.fx-portale .mapsvg text{fill:#DCE8FA}
+.hero.fx-portale .badge-r{background:rgba(7,18,38,.72)!important;border:1px solid rgba(51,198,244,.35)!important;color:#fff!important;box-shadow:0 0 30px -8px rgba(0,150,214,.6)!important}
+.hero.fx-portale .badge-r b{color:#fff!important}
+
+/* scelta iniziale del quotatore: vocale o procedura guidata */
+.pick-modo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:-2px 0 14px}
+.pm{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:14px;border:1.5px solid #DDE6F2;background:#fff;cursor:pointer;font:inherit;color:#10204A;transition:border-color .16s,box-shadow .16s,transform .16s}
+.pm:hover{transform:translateY(-1px);border-color:#0096D6;box-shadow:0 0 0 3px rgba(0,150,214,.12)}
+.pm .pm-e{font-size:1.6rem;line-height:1;flex:none}
+.pm b{display:block;font-size:.98rem;line-height:1.2}
+.pm small{display:block;font-size:.8rem;color:#5E6782;margin-top:2px}
+.pm-voc{background:linear-gradient(135deg,#F0FAFF,#F1FBF4)}
+.pm-voc small{color:#1E8A43;font-weight:700}
+.pm.on{border-color:#1E8A43;box-shadow:0 0 0 3px rgba(41,160,78,.14)}
+.pm-voc .pm-e{animation:fx-pulse 2.2s ease-in-out infinite}
+@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+.pick-cat.fx-guida button{animation:fx-guida .9s ease-out 1}
+@keyframes fx-guida{0%{box-shadow:0 0 0 0 rgba(41,160,78,.5)}100%{box-shadow:0 0 0 12px rgba(41,160,78,0)}}
+@media (max-width:420px){.pm{padding:9px}.pm b{font-size:.9rem}.pm small{font-size:.74rem}.pm .pm-e{font-size:1.35rem}}
+
+/* ===== portale anche nelle aperture delle altre pagine ===== */
+.fx-apertura{position:relative;background:radial-gradient(900px 500px at 75% 30%,#0B2150 0,var(--fx-notte2) 50%,var(--fx-notte) 100%)!important;color:#fff;overflow:hidden}
+.fx-apertura>*:not(.fx-canvas){position:relative;z-index:1}
+.fx-apertura h1{color:#fff!important}
+.fx-apertura p,.fx-apertura .lead,.fx-apertura .kick{color:#C9D6EE!important}
+.fx-apertura a:not(.btn){color:#9FE3FF}
+
+/* piè di pagina con bagliore */
+.ftr{position:relative;background:radial-gradient(800px 300px at 20% 0,#0B2150,#040A18 70%)!important}
+.ftr::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--fx-ciano),var(--fx-verde),transparent)}
+
+@media (prefers-reduced-motion:reduce){
+  .fx-in{opacity:1!important;transform:none!important;transition:none!important}
+  .btn-go::after,.btn-blue::after,.btn-cta::after,.pick-via::after,.hdr .btn::after,.pm-voc .pm-e{animation:none!important}
+}
