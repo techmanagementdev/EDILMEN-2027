@@ -14,7 +14,7 @@ const MAX_S = 180, MAX_BYTE = 10 * 1024 * 1024, MAX_FOTO = 5;
 const TIPI_AUDIO = ['audio/webm', 'audio/ogg', 'audio/mpeg', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/wav', 'audio/x-wav'];
 
 let box, D, rec = null, flusso = null, timer = null, invio = false;
-const nuovo = o => ({ audio: null, durata: null, url: null, regione: o.regione || null, comune: o.comune || '', testo: '', foto: [], tipo: o.tipo || null,
+const nuovo = o => ({ passo: 1, audio: null, durata: null, url: null, regione: o.regione || null, comune: o.comune || '', testo: '', foto: [], tipo: o.tipo || null,
   canale: null, nome: '', cognome: '', tel: '', mail: '', consensi: { privacy: false, condivisione_imprese: false, marketing: false }, origine: o.origine || 'sito',
   errore: '', fatto: null });
 
@@ -91,41 +91,49 @@ function consensiHtml() {
   return K.privacyHtml(window.EM_CONSENSI || T.consensiRiserva, D.consensi.marketing, esc);
 }
 
+const PROMESSA = 'Entro 60 minuti ti mandiamo la quotazione, al più tardi entro 5 giorni. Se manca qualche informazione, te la chiediamo.';
+const CANALI2 = { whatsapp: ['💬', 'WhatsApp', 'ti scriviamo su WhatsApp'], telefono: ['📞', 'Telefono', 'ti chiamiamo noi'] };
+
+function testa(passo) {
+  return `<div class="vcx-top"><span>🎙️ Mandaci un vocale · Richiesta gratuita</span><button type="button" class="vcx-chiudi" data-az="indietro" aria-label="Chiudi">✕ Chiudi</button></div>
+    ${passo ? `<div class="vcx-passo"><span>Passo ${passo} di 2</span><div class="vcx-barra"><i style="width:${passo * 50}%"></i></div></div>` : ''}`;
+}
+
 function disegna() {
   if (!box || box.dataset.modo !== 'vocale') return; // il contenitore è tornato alla quotazione
   if (D.fatto) {
-    const e = D.fatto.entro || { quando: 'oggi' };
-    const entro = e.quando === 'giorno' ? V.promessa.giorno(e.giorno) : V.promessa[e.quando] || V.promessa.oggi;
-    box.innerHTML = `<div class="pv"><div class="pv-corpo done"><h1 id="pv-h" tabindex="-1">${esc(V.fattoTitolo)}</h1><p class="sub">${V.fattoTesto(esc(D.fatto.codice), esc(entro), D.canale)}</p>
-      <div class="pv-fine"><button type="button" class="btn btn-blue" data-az="home">${esc(V.torna)}</button></div></div></div>`;
+    box.innerHTML = `<div class="vcx"><div class="vcx-card">${testa(0)}<div class="vcx-corpo vcx-fatto">
+      <div class="vcx-ok" aria-hidden="true">✅</div><h1 id="pv-h" tabindex="-1">Vocale ricevuto, grazie!</h1>
+      <p class="vcx-sub">Il codice della tua richiesta è <b>${esc(D.fatto.codice)}</b>.</p>
+      <p class="vcx-promessa">⏱ ${esc(PROMESSA)}</p>
+      <p class="vcx-sub">Ti ${D.canale === 'whatsapp' ? 'scriviamo su WhatsApp' : 'chiamiamo'} al numero <b>${esc(D.tel)}</b>.</p>
+      <div class="vcx-az"><button type="button" class="vcx-go" data-az="home">Torna alla home</button></div></div></div></div>`;
     $('#pv-h').focus(); scrollTo({ top: 0 }); return;
   }
-  const L = T.domande.luogo;
-  box.innerHTML = `<div class="pv vc"><div class="pv-corpo">
-    <div class="pv-modi" role="group" aria-label="Modalità di richiesta"><button type="button" class="pv-modo" data-az="digitale"><span class="emo" aria-hidden="true">${V.modoDigitale[0]}</span><span><b>${esc(V.modoDigitale[1])}</b><small>${esc(V.modoDigitale[2])}</small></span></button><button type="button" class="pv-modo on" aria-current="true"><span class="emo" aria-hidden="true">${V.modoVecchia[0]}</span><span><b>${esc(V.modoVecchia[1])}</b><small>${esc(V.modoVecchia[2])}</small></span></button></div>
-    <h1 id="pv-h" tabindex="-1">${esc(V.titolo)}</h1><p class="sub">${esc(V.sotto)} <b>${esc(V.promessa.oggi)}</b></p>
-    <h2 class="wz-h2">${esc(V.tipoTitolo)}</h2>
-    <div class="pv-chips vc-tipi" role="radiogroup" aria-label="${esc(V.tipoTitolo)}">${Object.entries(V.tipi).map(([k, n]) => `<button type="button" role="radio" aria-checked="${D.tipo === k}" class="pv-chip${D.tipo === k ? ' on' : ''}" data-tipo="${k}">${esc(n)}</button>`).join('')}</div>
-    <h2 class="wz-h2">${esc(V.comeTitolo)}</h2>
-    ${campo('vc-testo', esc(V.testoGrande), `<textarea id="vc-testo" class="pv-in vc-area" data-bind="testo" maxlength="2000" rows="5" placeholder="${esc(V.testoEsempio)}">${esc(D.testo)}</textarea>`)}
-    <p class="vc-oppure">${esc(V.oppure)}</p>
-    <section class="vc-sez" aria-label="${esc(V.parla)}">${sezioneAudio()}</section>
-    <div class="fld"><label for="vc-foto">${esc(V.foto)}</label><input type="file" id="vc-foto" accept="image/*" multiple data-file="foto"><p class="small">${esc(V.fotoNota)}</p>
-      ${D.foto.length ? `<ul class="vc-foto">${D.foto.map((f, i) => `<li>${esc(f.name)} <button type="button" class="pv-link" data-togli-foto="${i}">${esc(V.togli)}</button></li>`).join('')}</ul>` : ''}</div>
-    <h2 class="wz-h2">${esc(V.dove)}</h2>
-    <div class="pv-opts pv-reg" role="radiogroup" aria-label="${esc(V.dove)}">${Object.entries(L.regioni).map(([k, n]) =>
-      `<button type="button" role="radio" aria-checked="${D.regione === k}" class="pv-opt${D.regione === k ? ' on' : ''}" data-reg="${k}"><span class="t">${esc(n)}</span></button>`).join('')}</div>
-    ${campo('vc-comune', esc(L.comune), `<input type="text" id="vc-comune" class="pv-in" data-bind="comune" value="${esc(D.comune)}" placeholder="${esc(L.comuneEsempio)}" autocomplete="address-level2">`)}
-    <h2 class="wz-h2">${esc(K.titolo)}</h2><p class="sub">${esc(K.sotto)}</p>
-    <div class="tabs2 tabs3" role="radiogroup" aria-label="${esc(K.titolo)}">${Object.entries(K.canali).map(([k, [e, t, s]]) =>
-      `<button type="button" role="radio" aria-checked="${D.canale === k}" class="${D.canale === k ? 'on' : ''}" data-canale="${k}"><span class="emo" aria-hidden="true">${e}</span>${esc(t)}<small>${esc(s)}</small></button>`).join('')}</div>
-    ${D.canale === 'email' ? campo('vc-recapito', esc(K.campo.email), `<input type="email" id="vc-recapito" data-bind="mail" value="${esc(D.mail)}" autocomplete="email" inputmode="email">`)
-      : D.canale ? campo('vc-recapito', esc(K.campo[D.canale]), `<input type="tel" id="vc-recapito" data-bind="tel" value="${esc(D.tel)}" placeholder="+39" autocomplete="tel" inputmode="tel">`) : ''}
-    <input type="text" id="vc-trappola" tabindex="-1" autocomplete="off" class="pv-trappola" aria-hidden="true">
-    ${consensiHtml()}<p class="pv-errore" id="vc-errore" role="alert" ${D.errore ? '' : 'hidden'}>${esc(D.errore)}</p>
-  </div>
-  <div class="wz-foot pv-piede"><div class="in"><button type="button" class="btn btn-line" data-az="indietro">${esc(T.comuni.indietro)}</button><span></span>
-    <button type="button" class="btn btn-go" data-az="invia" ${invio ? 'aria-disabled="true"' : ''}>${esc(V.invia)}</button></div></div></div>`;
+  const passo = D.passo || 1;
+  let corpo;
+  if (passo === 1) {
+    corpo = `<h1 id="pv-h" tabindex="-1">Raccontaci il lavoro a voce</h1>
+      <p class="vcx-sub">Dove si trova, che cosa vuoi fare, quanto è grande. Come lo spiegheresti a un geometra. Massimo 3 minuti.</p>
+      <section class="vcx-rec" aria-label="${esc(V.parla)}">${sezioneAudio()}</section>
+      <details class="vcx-alt"${D.testo ? ' open' : ''}><summary>✍️ Preferisci scrivere?</summary>
+        <textarea id="vc-testo" class="vcx-in vcx-area" data-bind="testo" maxlength="2000" rows="4" placeholder="${esc(V.testoEsempio)}">${esc(D.testo)}</textarea></details>
+      <p class="vcx-promessa">⏱ ${esc(PROMESSA)}</p>`;
+  } else {
+    corpo = `<h1 id="pv-h" tabindex="-1">Come ti contattiamo?</h1>
+      <p class="vcx-sub">Ti mandiamo la quotazione qui. Niente pubblicità.</p>
+      <div class="vcx-canali" role="radiogroup" aria-label="Metodo di contatto">${Object.entries(CANALI2).map(([k, [e, t, s]]) =>
+        `<button type="button" role="radio" aria-checked="${D.canale === k}" class="vcx-canale${D.canale === k ? ' on' : ''}" data-canale="${k}"><span class="e" aria-hidden="true">${e}</span><span><b>${esc(t)}</b><small>${esc(s)}</small></span></button>`).join('')}</div>
+      <div class="vcx-campi"><div class="fld"><label for="vc-nome">👤 Nome</label><input type="text" id="vc-nome" class="vcx-in" data-bind="nome" value="${esc(D.nome)}" autocomplete="given-name"></div>
+      <div class="fld"><label for="vc-recapito">📱 Numero di telefono</label><input type="tel" id="vc-recapito" class="vcx-in" data-bind="tel" value="${esc(D.tel)}" placeholder="+39" autocomplete="tel" inputmode="tel"></div></div>
+      <input type="text" id="vc-trappola" tabindex="-1" autocomplete="off" class="pv-trappola" aria-hidden="true">
+      <div class="vcx-privacy">${consensiHtml()}</div>`;
+  }
+  box.innerHTML = `<div class="vcx"><div class="vcx-card">${testa(passo)}<div class="vcx-corpo">${corpo}
+      <p class="pv-errore vcx-err" id="vc-errore" role="alert" ${D.errore ? '' : 'hidden'}>${esc(D.errore)}</p></div>
+    <div class="vcx-az"><button type="button" class="vcx-back" data-az="${passo === 1 ? 'indietro' : 'passo1'}">← Indietro</button>
+      ${passo === 1 ? '<button type="button" class="vcx-go" data-az="passo2">Continua →</button>' : `<button type="button" class="vcx-go" data-az="invia" ${invio ? 'aria-disabled="true"' : ''}>Invia il vocale →</button>`}</div>
+    <p class="vcx-guida">Preferisci rispondere a qualche domanda? <button type="button" class="pv-link" data-az="digitale">Usa la procedura guidata</button></p></div></div>`;
 }
 
 function errore(msg) {
@@ -135,10 +143,11 @@ function errore(msg) {
   else disegna();
 }
 
+function mancaAudio() { return !D.audio && D.testo.trim().length < 10 ? V.manca.audio : ''; }
 function manca() {
-  if (!D.audio && D.testo.trim().length < 10) return V.manca.audio;
-  if (!D.regione) return V.manca.zona;
+  if (mancaAudio()) return mancaAudio();
   const M = K.manca;
+  if (!D.nome.trim()) return 'Scrivi il tuo nome.';
   if (!D.canale) return M.canale;
   if (D.canale === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(D.mail.trim()) ? '' : M.email;
   return D.tel.replace(/\D/g, '').length < 6 ? M.telefono : '';
@@ -223,6 +232,8 @@ function clic(e) {
   if (az === 'ferma' && rec) return rec.mr.stop();
   if (az === 'rifai') { D.audio = null; return avviaRegistrazione(); }
   if (az === 'togli') { if (D.url) URL.revokeObjectURL(D.url); D.audio = null; D.url = null; D.durata = null; return disegna(); }
+  if (az === 'passo2') { if (rec) return errore('Ferma la registrazione prima di continuare.'); const m = mancaAudio(); if (m) return errore(m); D.passo = 2; D.errore = ''; disegna(); $('#pv-h').focus(); return scrollTo({ top: 0 }); }
+  if (az === 'passo1') { D.passo = 1; D.errore = ''; disegna(); return scrollTo({ top: 0 }); }
   if (az === 'invia') return invia();
   if (az === 'digitale') { if (rec) rec.mr.stop(); return EM.apriPreventivo ? EM.apriPreventivo({ regione: D.regione }) : EM.show && EM.show('home'); }
   if (t.dataset.tipo) { D.tipo = D.tipo === t.dataset.tipo ? null : t.dataset.tipo; return disegna(); }

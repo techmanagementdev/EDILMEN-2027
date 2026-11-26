@@ -957,7 +957,7 @@ input,select,textarea{font:inherit;color:inherit}
 </style>
 <link rel="stylesheet" href="/css/edm-top.css?v=3">
 <script>(function(d){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('edm-pre');setTimeout(function(){d.classList.remove('edm-pre')},1500)})(document.documentElement)</script>
-<link rel="stylesheet" href="/css/edm-brand.css?v=7"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"><link rel="stylesheet" href="/css/edm-futuro.css?v=12"><script src="/js/edm-futuro.js?v=6" defer></script></head>
+<link rel="stylesheet" href="/css/edm-brand.css?v=7"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"><link rel="stylesheet" href="/css/edm-futuro.css?v=14"><script src="/js/edm-futuro.js?v=6" defer></script></head>
 <body>
 <header class="hdr">
   <div class="wrap">
@@ -1319,12 +1319,12 @@ function show(v){if(window.EM_VOCALE)EM_VOCALE.ferma();view=v;$('#v-home').class
 let caricamento=null;
 const carica=src=>new Promise((ok,ko)=>{const t=src.endsWith('.css')?Object.assign(document.createElement('link'),{rel:'stylesheet',href:src}):Object.assign(document.createElement('script'),{src});t.onload=ok;t.onerror=ko;document.head.appendChild(t)});
 function caricaPreventivo(){if(window.EM_PREVENTIVO)return Promise.resolve();
-  if(!caricamento)caricamento=Promise.all(['css/preventivo.css','js/testi.js?v=2','js/flusso.js','js/listino.js','js/territorio.js'].map(f=>document.querySelector(`[src="${f}"]`)?null:carica(f))).then(()=>carica('js/preventivo.js')).catch(e=>{caricamento=null;throw e});
+  if(!caricamento)caricamento=Promise.all(['css/preventivo.css','js/testi.js?v=3','js/flusso.js','js/listino.js','js/territorio.js'].map(f=>document.querySelector(`[src="${f}"]`)?null:carica(f))).then(()=>carica('js/preventivo.js')).catch(e=>{caricamento=null;throw e});
   return caricamento}
 let daPreventivo=false;
 function apriVocale(o={}){daPreventivo=!!o.daPreventivo;show('wizard');try{history.replaceState(null,'','#vocale')}catch(e){}const box=$('#wz-app');
   const pronto=()=>window.EM_VOCALE&&window.EdilFlusso;if(!pronto())box.innerHTML='<p class="pv-carica">Carico...</p>';
-  Promise.all(['css/preventivo.css','js/testi.js?v=2','js/config.js','js/flusso.js'].map(f=>document.querySelector(`[src="${f}"],[href="${f}"]`)?Promise.resolve():carica(f))).then(()=>window.EM_VOCALE?null:carica('js/vocale.js'))
+  Promise.all(['css/preventivo.css','js/testi.js?v=3','js/config.js','js/flusso.js'].map(f=>document.querySelector(`[src="${f}"],[href="${f}"]`)?Promise.resolve():carica(f))).then(()=>window.EM_VOCALE?null:carica('js/vocale.js?v=2'))
     .then(()=>window.EM_VOCALE.apri(box,o)).catch(()=>{box.innerHTML='<div class="pv-carica"><p>Non riesco a caricare la pagina. Controlla la connessione e riprova.</p><button type="button" class="btn btn-blue" style="margin-top:14px">Riprova</button></div>';$('button',box).onclick=()=>apriVocale(o)})}
 function apriPreventivo(preset){show('wizard');const box=$('#wz-app');if(!window.EM_PREVENTIVO)box.innerHTML='<p class="pv-carica">Carico la quotazione...</p>';
   caricaPreventivo().then(()=>window.EM_PREVENTIVO.avvia(preset||{})).catch(()=>{box.innerHTML='<div class="pv-carica"><p>Non riesco a caricare la quotazione. Controlla la connessione e riprova.</p><button type="button" class="btn btn-blue" style="margin-top:14px">Riprova</button></div>';$('button',box).onclick=()=>apriPreventivo(preset)})}
