@@ -28,9 +28,9 @@ function formatoRegistrazione() {
 }
 async function avviaRegistrazione() {
   const formato = formatoRegistrazione();
-  if (formato === null || !navigator.mediaDevices) return errore(V.microfonoNo);
+  if (formato === null || !navigator.mediaDevices) { D.noMic = true; disegna(); return errore(V.microfonoNo); }
   let stream;
-  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { return errore(V.microfonoNo); }
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { D.noMic = true; disegna(); return errore(V.microfonoNo); }
   const pezzi = [], inizio = Date.now();
   const mr = new MediaRecorder(stream, formato ? { mimeType: formato } : undefined);
   rec = { mr, inizio, secondi: 0 };
@@ -81,10 +81,7 @@ function sezioneAudio() {
   if (D.audio) return `<div class="vc-pronto"><p><b>${esc(V.pronto)}</b>${D.durata ? ` (${V.tempo(D.durata, MAX_S).split(' ')[0]})` : ''}</p><audio controls src="${D.url}"></audio>
     <div class="vc-riga"><button type="button" class="btn btn-line" data-az="rifai">${esc(V.rifai)}</button><button type="button" class="pv-link" data-az="togli">${esc(V.togli)}</button></div></div>`;
   return `<div class="vc-rec"><button type="button" class="vc-mic" data-az="registra" aria-label="${esc(V.registra)}"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
-    <p class="vc-stato"><b>${esc(V.registra)}</b><span>${esc(V.durataMax)}</span></p></div>
-    <p class="vc-oppure">${esc(V.oppure)}</p>
-    <label class="btn btn-line vc-file">${esc(V.carica)}<input type="file" accept="audio/*,.m4a,.opus,.ogg,.mp3,.wav,.webm,.aac" data-file="audio" class="vc-nascosto"></label>
-    <p class="small vc-centro">${esc(V.caricaNota)}</p>`;
+    <p class="vc-stato"><b>${esc(V.registra)}</b><span>${esc(V.durataMax)}</span></p></div>`;
 }
 
 function consensiHtml() {
@@ -116,8 +113,8 @@ function disegna() {
     corpo = `<h1 id="pv-h" tabindex="-1">Raccontaci il lavoro a voce</h1>
       <p class="vcx-sub">Dove si trova, che cosa vuoi fare, quanto è grande. Come lo spiegheresti a un geometra. Massimo 3 minuti.</p>
       <section class="vcx-rec" aria-label="${esc(V.parla)}">${sezioneAudio()}</section>
-      <details class="vcx-alt"${D.testo ? ' open' : ''}><summary>✍️ Preferisci scrivere?</summary>
-        <textarea id="vc-testo" class="vcx-in vcx-area" data-bind="testo" maxlength="2000" rows="4" placeholder="${esc(V.testoEsempio)}">${esc(D.testo)}</textarea></details>
+      ${D.noMic ? `<div class="vcx-alt"><label for="vc-testo"><b>✍️ Il microfono non è disponibile: scrivi qui il lavoro</b></label>
+        <textarea id="vc-testo" class="vcx-in vcx-area" data-bind="testo" maxlength="2000" rows="4" placeholder="${esc(V.testoEsempio)}">${esc(D.testo)}</textarea></div>` : ''}
       <p class="vcx-promessa">⏱ ${esc(PROMESSA)}</p>`;
   } else {
     corpo = `<h1 id="pv-h" tabindex="-1">Come ti contattiamo?</h1>

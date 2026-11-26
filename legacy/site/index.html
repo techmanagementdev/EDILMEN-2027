@@ -1324,7 +1324,7 @@ function caricaPreventivo(){if(window.EM_PREVENTIVO)return Promise.resolve();
 let daPreventivo=false;
 function apriVocale(o={}){daPreventivo=!!o.daPreventivo;show('wizard');try{history.replaceState(null,'','#vocale')}catch(e){}const box=$('#wz-app');
   const pronto=()=>window.EM_VOCALE&&window.EdilFlusso;if(!pronto())box.innerHTML='<p class="pv-carica">Carico...</p>';
-  Promise.all(['css/preventivo.css','js/testi.js?v=3','js/config.js','js/flusso.js'].map(f=>document.querySelector(`[src="${f}"],[href="${f}"]`)?Promise.resolve():carica(f))).then(()=>window.EM_VOCALE?null:carica('js/vocale.js?v=2'))
+  Promise.all(['css/preventivo.css','js/testi.js?v=3','js/config.js','js/flusso.js'].map(f=>document.querySelector(`[src="${f}"],[href="${f}"]`)?Promise.resolve():carica(f))).then(()=>window.EM_VOCALE?null:carica('js/vocale.js?v=3'))
     .then(()=>window.EM_VOCALE.apri(box,o)).catch(()=>{box.innerHTML='<div class="pv-carica"><p>Non riesco a caricare la pagina. Controlla la connessione e riprova.</p><button type="button" class="btn btn-blue" style="margin-top:14px">Riprova</button></div>';$('button',box).onclick=()=>apriVocale(o)})}
 function apriPreventivo(preset){show('wizard');const box=$('#wz-app');if(!window.EM_PREVENTIVO)box.innerHTML='<p class="pv-carica">Carico la quotazione...</p>';
   caricaPreventivo().then(()=>window.EM_PREVENTIVO.avvia(preset||{})).catch(()=>{box.innerHTML='<div class="pv-carica"><p>Non riesco a caricare la quotazione. Controlla la connessione e riprova.</p><button type="button" class="btn btn-blue" style="margin-top:14px">Riprova</button></div>';$('button',box).onclick=()=>apriPreventivo(preset)})}
