@@ -4,7 +4,7 @@
 :root{--fx-blu:#0096D6;--fx-ciano:#33C6F4;--fx-verde:#29A04E;--fx-notte:#040A18;--fx-notte2:#0A1630}
 
 /* testata in vetro scuro con filo al neon */
-.hdr{background:rgba(4,10,24,.78)!important;backdrop-filter:saturate(1.6) blur(16px)!important;-webkit-backdrop-filter:saturate(1.6) blur(16px)!important;border-bottom:1px solid rgba(51,198,244,.18)!important}
+.hdr{background:rgba(7,18,38,.96)!important;backdrop-filter:saturate(1.6) blur(16px)!important;-webkit-backdrop-filter:saturate(1.6) blur(16px)!important;border-bottom:1px solid rgba(51,198,244,.18)!important}
 .hdr::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--fx-ciano),var(--fx-verde),transparent);opacity:.7}
 .hdr nav a{color:#C9D6EE!important}
 .hdr nav a:hover{color:#fff!important;background:rgba(255,255,255,.07)!important}
@@ -93,3 +93,23 @@
   .fx-in{opacity:1!important;transform:none!important;transition:none!important}
   .btn-go::after,.btn-blue::after,.btn-cta::after,.pick-via::after,.hdr .btn::after,.pm-voc .pm-e{animation:none!important}
 }
+
+/* ===== HOME v2 (26/11/2026): prima scelta con due soli pulsanti, villa chiara a destra ===== */
+.hero.fx-casa .hero-foto{opacity:1!important}
+.hero.fx-casa .hero-foto::after{background:linear-gradient(90deg,#F3F7FC 0,rgba(243,247,252,.96) 36%,rgba(243,247,252,.55) 52%,rgba(243,247,252,0) 66%),linear-gradient(0deg,#fff 0,rgba(255,255,255,0) 14%)!important}
+@media (min-width:981px){.hero.fx-casa .mapcard{visibility:hidden}.hero.fx-casa{min-height:calc(100svh - 64px)}}
+.hero.fx-casa h1{font-size:clamp(2.6rem,4.6vw,4.4rem)!important;line-height:1.02}
+.hero.fx-casa h1 .h-blu{color:#0077AA}
+/* la prima schermata mostra solo la scelta: vocale o procedura guidata */
+#picker:not(.fx-aperto) #pick-t1,#picker:not(.fx-aperto) #pick-cat,#picker:not(.fx-aperto) .pick-via{display:none!important}
+#picker:not(.fx-aperto){padding:18px!important}
+#picker:not(.fx-aperto) .pick-modo{margin:0;gap:14px}
+#picker:not(.fx-aperto) .pm{flex-direction:column;align-items:flex-start;gap:10px;min-height:150px;padding:20px;border-width:2px}
+#picker:not(.fx-aperto) .pm .pm-e{font-size:2.6rem}
+#picker:not(.fx-aperto) .pm b{font-size:1.25rem}
+#picker:not(.fx-aperto) .pm small{font-size:.92rem}
+#picker:not(.fx-aperto) .pm-gui{border-color:#DDE6F2;box-shadow:none}
+#picker:not(.fx-aperto) .pm-gui small{color:#0077AA;font-weight:700}
+#picker.fx-aperto .pick-modo{margin-bottom:14px}
+#picker.fx-aperto .pm{min-height:0}
+@media (max-width:640px){#picker:not(.fx-aperto) .pm{min-height:128px;padding:14px}#picker:not(.fx-aperto) .pm .pm-e{font-size:2.1rem}#picker:not(.fx-aperto) .pm b{font-size:1.05rem}}

@@ -70,7 +70,7 @@
 
     // portale nella home
     var hero = d.querySelector('.hero');
-    if (hero) { hero.classList.add('fx-portale'); portale(hero, { x: 0.74, y: 0.5, r: 0.42 }); }
+    if (hero) { hero.classList.add('fx-casa'); }
     else {
       // nelle altre pagine: l'apertura con il titolo diventa un piccolo portale (solo se è un blocco corto)
       var h1 = location.pathname.indexOf('/blog') === 0 ? null : d.querySelector('main h1, h1');
@@ -101,6 +101,7 @@
     // scelta iniziale: "Procedura guidata" evidenzia le schede del lavoro
     var gui = d.getElementById('pm-gui');
     if (gui) gui.addEventListener('click', function () {
+      var pk = d.getElementById('picker'); if (pk) pk.classList.add('fx-aperto');
       var cat = d.getElementById('pick-cat'); if (!cat) return;
       cat.classList.remove('fx-guida'); void cat.offsetWidth; cat.classList.add('fx-guida');
       var b1 = cat.querySelector('button'); if (b1) b1.focus({ preventScroll: true });
