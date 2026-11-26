@@ -405,7 +405,7 @@ body.no-guide .guide{display:none}
 @media (max-width:600px){.g-me,.g-me img{width:56px;height:56px;border-radius:14px}.guide{right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
-<link rel="stylesheet" href="/css/edm-brand.css?v=3"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"></head>
+<link rel="stylesheet" href="/css/edm-brand.css?v=4"><link rel="icon" type="image/svg+xml" href="/img/edilmen-marchio.svg"></head>
 <body>
 
 <!-- ============ LOGIN ============ -->
@@ -438,14 +438,14 @@ body.no-guide .guide{display:none}
         <span class="who">Entra come <b>Giulia Rossi</b> · Trento</span>
       </button>
     </div>
-    <div class="login-foot"><a class="link" href="index.html">Torna al sito</a><a class="link" href="#/login">Accesso del team EdilMen (dati veri)</a><span>I dati d'esempio restano salvati solo in questo browser.</span></div>
+    <div class="login-foot"><a class="link" href="/">Torna al sito</a><a class="link" href="#/login">Accesso del team EdilMen (dati veri)</a><span>I dati d'esempio restano salvati solo in questo browser.</span></div>
   </div>
 </section>
 
 <!-- ============ APP ============ -->
 <div class="shell" id="shell" hidden>
   <aside class="side" id="side">
-    <a class="brand" href="index.html"><b><img class="logo-img" src="/img/edilmen-logo-bianco.svg" alt="EdilMen" width="153" height="48"></b><small>L'edilizia trasparente, finalmente.</small></a>
+    <a class="brand" href="/"><b><img class="logo-img" src="/img/edilmen-logo-bianco.svg" alt="EdilMen" width="153" height="48"></b><small>L'edilizia trasparente, finalmente.</small></a>
     <div class="area-lbl" id="area-lbl"></div>
     <nav class="nav" id="nav" aria-label="Menu"></nav>
     <div class="side-foot">
@@ -746,7 +746,7 @@ $('#logout').onclick=e=>{e.preventDefault();const r=role;try{sessionStorage.remo
 function togglePop(id,html){const p=$(id);const open=p.hidden;$$('.pop').forEach(x=>x.hidden=true);if(open){p.innerHTML=html;paintIcons(p);p.hidden=false}}
 document.addEventListener('click',e=>{if(!e.target.closest('.pop,#bell,#me'))$$('.pop').forEach(x=>x.hidden=true);if(!e.target.closest('.search'))$('#q-drop').hidden=true});
 $('#bell').onclick=()=>{const t=todos();togglePop('#bell-pop',`<div class="gl">Da fare</div>${t.length?t.map(x=>`<a href="${x.h}"><span style="color:var(--${x.c})">${ic(x.i)}</span><span><b style="display:block">${x.t}</b><small class="muted">${x.s}</small></span></a>`).join(''):'<div class="empty" style="padding:12px;color:var(--muted)">Tutto in ordine, niente da fare.</div>'}`)};
-$('#me').onclick=()=>togglePop('#me-pop',`<div class="gl">Cambia area (prototipo)</div>${Object.entries(ROLES).map(([k,r])=>`<a href="${r.home}" data-sw="${k}">${ic(k==='admin'?'shield':k==='azienda'?'build':'user')}<span><b style="display:block">${r.lbl}</b><small class="muted">${esc(r.name)}</small></span></a>`).join('')}<div class="gl">Account</div><a href="index.html">${ic('home')}Vai al sito pubblico</a><a href="#/login">${ic('logout')}Esci</a>`);
+$('#me').onclick=()=>togglePop('#me-pop',`<div class="gl">Cambia area (prototipo)</div>${Object.entries(ROLES).map(([k,r])=>`<a href="${r.home}" data-sw="${k}">${ic(k==='admin'?'shield':k==='azienda'?'build':'user')}<span><b style="display:block">${r.lbl}</b><small class="muted">${esc(r.name)}</small></span></a>`).join('')}<div class="gl">Account</div><a href="/">${ic('home')}Vai al sito pubblico</a><a href="#/login">${ic('logout')}Esci</a>`);
 function todos(){
   const t=[];
   if(role==='admin'){
@@ -1144,7 +1144,7 @@ function azDrawer(id){
 ROUTES['admin/richieste']=el=>{
   const tabs=[['tutte','Tutte'],...Object.entries(STATI).map(([k,v])=>[k,v[0]])];
   const list=db.richieste.filter(r=>ui.rqTab==='tutte'||r.stato===ui.rqTab);
-  el.innerHTML=`<div class="ph"><div><h1>Richieste e preventivi</h1><p>Le richieste arrivano dal sito: dalla videocall fino al contratto con l'azienda.</p></div><a class="btn btn-ghost" href="index.html#preventivo" target="_blank" rel="noopener">${ic('plus')}Prova una richiesta dal sito</a></div>
+  el.innerHTML=`<div class="ph"><div><h1>Richieste e preventivi</h1><p>Le richieste arrivano dal sito: dalla videocall fino al contratto con l'azienda.</p></div><a class="btn btn-ghost" href="/#preventivo" target="_blank" rel="noopener">${ic('plus')}Prova una richiesta dal sito</a></div>
   <div class="card"><div class="tabs" style="padding:0 10px">${tabs.map(([k,l])=>`<button class="${k===ui.rqTab?'on':''}" data-tab="${k}">${l}<span class="c">${k==='tutte'?db.richieste.length:db.richieste.filter(r=>r.stato===k).length}</span></button>`).join('')}</div>
   <div class="tw"><table class="t"><thead><tr><th>Richiesta</th><th>Cliente</th><th>Lavoro</th><th>Valore</th><th>Azienda</th><th>Stato</th></tr></thead><tbody>
   ${list.map(r=>{const ti=tipInfo(r.tip),a=r.az&&AZ(r.az);return `<tr class="clickable" data-rq="${r.id}"><td><b>${r.id}</b>${r.fonte==='sito'?' <span class="pill blue">dal sito</span>':''}<br><small class="muted">${fmtD(r.data)}</small></td><td>${esc(r.cliente.nome)}<br><small class="muted">${esc(r.cliente.tel)}</small></td>
@@ -1279,7 +1279,7 @@ ROUTES['admin/blog']=(el,a)=>{if(a)return blogEditor(el,a);
   el.innerHTML=`<div class="ph"><div><h1>Blog e contenuti</h1><p>Guide, prezzi, bonus e bandi: contenuti utili che portano visite da Google e fiducia nel marchio.</p></div><a class="btn btn-blue" href="#/admin/blog/nuovo">${ic('plus')}Nuovo articolo</a></div>
   <div class="kpis">${kpi('file',posts.filter(p=>p.status==='pubblicato').length,'Articoli pubblicati')}${kpi('edit',posts.filter(p=>p.status!=='pubblicato').length,'Bozze')}${kpi('star',posts.length?Math.round(posts.reduce((s2,p)=>s2+seoScore(p),0)/posts.length*10/8*10)/10+'/10':'—','Punteggio SEO medio')}${kpi('cal',posts[0]?fmtD(posts[0].date):'—','Ultima pubblicazione')}</div>
   <div class="grid2" style="margin-top:18px">
-   <div class="card"><div class="card-h"><h2>Articoli</h2><a class="link" href="blog.html" target="_blank" rel="noopener">Apri il blog ${ic('right','sm')}</a></div><div class="tw"><table class="t"><thead><tr><th>Titolo</th><th>Categoria</th><th>Data</th><th>SEO</th><th>Stato</th><th></th></tr></thead><tbody>
+   <div class="card"><div class="card-h"><h2>Articoli</h2><a class="link" href="/blog" target="_blank" rel="noopener">Apri il blog ${ic('right','sm')}</a></div><div class="tw"><table class="t"><thead><tr><th>Titolo</th><th>Categoria</th><th>Data</th><th>SEO</th><th>Stato</th><th></th></tr></thead><tbody>
    ${posts.map(p=>{const sc=seoScore(p);return `<tr><td><b>${esc(p.title)}</b><br><small class="muted">/${esc(p.slug)}${p.seed?' · <span style="color:var(--amber)">testo di esempio: verifica i dati prima di andare online</span>':''}</small></td><td><span class="pill gray">${esc(B.CATS[p.cat])}</span></td><td>${fmtD(p.date)}</td>
      <td><span class="pill ${sc>=7?'green':sc>=5?'amber':'red'}">${sc}/8</span></td><td>${p.status==='pubblicato'?'<span class="pill green">Pubblicato</span>':'<span class="pill gray">Bozza</span>'}</td>
      <td><div class="row" style="flex-wrap:nowrap"><a class="btn btn-outline btn-sm" href="#/admin/blog/${encodeURIComponent(p.slug)}">${ic('edit','sm')}Modifica</a><a class="btn btn-ghost btn-sm" href="blog.html?a=${encodeURIComponent(p.slug)}&anteprima=1" target="_blank" rel="noopener" title="Vedi">${ic('eye','sm')}</a><button class="btn btn-red btn-sm" data-delp="${esc(p.slug)}" title="Elimina">${ic('trash','sm')}</button></div></td></tr>`}).join('')}
@@ -1512,7 +1512,7 @@ function anonDrawer(p,label,q){
 }
 ROUTES['cliente']=el=>{
   const list=mine();
-  el.innerHTML=`<div class="ph"><div><h1>Le mie richieste</h1><p>Tutto quello che hai chiesto a EdilMen, in un posto solo. Per ogni cosa parli con noi: ci occupiamo noi delle imprese.</p></div><a class="btn btn-blue" href="index.html#preventivo">${ic('plus')}Nuova richiesta</a></div>
+  el.innerHTML=`<div class="ph"><div><h1>Le mie richieste</h1><p>Tutto quello che hai chiesto a EdilMen, in un posto solo. Per ogni cosa parli con noi: ci occupiamo noi delle imprese.</p></div><a class="btn btn-blue" href="/#preventivo">${ic('plus')}Nuova richiesta</a></div>
   <div class="stack">${list.map(r=>{const ti=tipInfo(r.tip);return `<a class="card req" href="#/cliente/richiesta/${r.id}" style="text-decoration:none">
     <div class="req-top"><div><h3>${esc(ti.name)} · ${r.q} ${unitLbl(ti.unit)}</h3><p class="muted">${esc(r.citta)} · richiesta del ${fmtD(r.data)}${r.fonte==='sito'?' dal sito':''}</p></div>${pill(r.stato,STATI)}</div>
     <div class="tl">${STEPS_CL.map(([n,s])=>`<div class="${s.includes(r.stato)?'on':''}"><i></i>${n}</div>`).join('')}</div>
