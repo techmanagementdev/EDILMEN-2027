@@ -135,6 +135,8 @@
       e.addEventListener('pointermove', function (ev) { var r = e.getBoundingClientRect(); e.style.setProperty('--mx', (ev.clientX - r.left) + 'px'); e.style.setProperty('--my', (ev.clientY - r.top) + 'px'); });
     });
 
+    var torna = d.getElementById('pick-torna');
+    if (torna) torna.addEventListener('click', function () { var pk = d.getElementById('picker'); if (pk) pk.classList.remove('fx-aperto'); var g = d.getElementById('pm-gui'); if (g) g.focus({ preventScroll: true }); });
     // scelta iniziale: "Procedura guidata" evidenzia le schede del lavoro
     var gui = d.getElementById('pm-gui');
     if (gui) gui.addEventListener('click', function () {

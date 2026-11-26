@@ -230,3 +230,9 @@ input::placeholder,textarea::placeholder{color:#8a99b8;opacity:1}
   #picker:not(.fx-aperto) .pm{min-height:132px;padding:14px 16px}
   #picker:not(.fx-aperto) .pm .pm-e{width:44px;height:44px}
 }
+
+/* dopo "Procedura guidata": via i due riquadri, resta solo un piccolo Indietro */
+#picker.fx-aperto .pick-modo,#picker.fx-aperto .pick-scegli{display:none!important}
+.pick-torna{display:none}
+#picker.fx-aperto .pick-torna{display:inline-flex;align-items:center;gap:4px;margin:0 0 8px;padding:6px 10px;border:0;border-radius:8px;background:#EEF2F7;color:#10204A;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer}
+#picker.fx-aperto .pick-torna:hover{background:#E2E8F1}
